@@ -7,7 +7,6 @@
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-
   "repository": {
     "type": "git",
     "url": "git+https://github.com/NotYash1066/Skill-Swap.git"
@@ -21,6 +20,8 @@
   },
   "homepage": "https://github.com/NotYash1066/Skill-Swap#readme",
   "dependencies": {
-    "express": "^5.1.0"
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
   }
 }
