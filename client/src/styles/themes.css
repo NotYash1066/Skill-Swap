@@ -1,0 +1,55 @@
+/* Light Theme (Default) */
+:root {
+  --bg-primary: #f5f7fa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f8f9fa;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --border-color: #e1e5e9;
+  --border-light: #f0f0f0;
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-blue: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --gradient-pink: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  --shadow-light: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 8px 20px rgba(102, 126, 234, 0.3);
+  --hover-bg: #f8f9fa;
+  --hover-border: #e9ecef;
+  --error-bg: #fee;
+  --error-color: #c33;
+  --error-border: #c33;
+}
+
+/* Dark Theme */
+.dark-theme {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted: #808080;
+  --border-color: #404040;
+  --border-light: #4a4a4a;
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-blue: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --gradient-pink: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  --shadow-light: 0 4px 20px rgba(0, 0, 0, 0.3);
+  --shadow-medium: 0 8px 20px rgba(102, 126, 234, 0.4);
+  --hover-bg: #3a3a3a;
+  --hover-border: #4a4a4a;
+  --error-bg: #4a1f1f;
+  --error-color: #ff6b6b;
+  --error-border: #ff6b6b;
+}
+
+/* Apply theme variables to body */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}

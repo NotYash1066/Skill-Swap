@@ -1,20 +1,27 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-module.exports = function (req, res, next) {
-	// Get token from header
-	const token = req.header("x-auth-token");
+const auth = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '') || req.header('x-auth-token');
+    
+    if (!token) {
+      return res.status(401).json({ msg: 'No token, authorization denied' });
+    }
 
-	// Check if not token
-	if (!token) {
-		return res.status(401).json({ msg: "No token, authorization denied" });
-	}
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    const user = await User.findById(decoded.user.id).select('-password');
+    
+    if (!user) {
+      return res.status(401).json({ msg: 'Token is not valid' });
+    }
 
-	// Verify token
-	try {
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
-		req.user = decoded.user;
-		next();
-	} catch (err) {
-		res.status(401).json({ msg: "Token is not valid" });
-	}
+    req.user = user;
+    next();
+  } catch (err) {
+    console.error('Auth middleware error:', err.message);
+    res.status(401).json({ msg: 'Token is not valid' });
+  }
 };
+
+module.exports = auth;
