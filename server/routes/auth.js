@@ -199,11 +199,32 @@ router.put("/skills", auth, async (req, res) => {
 	try {
 		const { skillsOffered, skillsSought } = req.body;
 		
+		// Validate and sanitize skills
+		const sanitizeSkills = (skills) => {
+			if (!Array.isArray(skills)) return [];
+			return skills
+				.filter(skill => typeof skill === 'string' && skill.trim().length > 0)
+				.map(skill => skill.trim().toLowerCase())
+				.filter(skill => skill.length <= 50) // Max skill length
+				.slice(0, 20); // Max 20 skills per category
+		};
+
+		const sanitizedOffered = sanitizeSkills(skillsOffered);
+		const sanitizedSought = sanitizeSkills(skillsSought);
+
+		// Validate that user has at least one skill offered or sought
+		if (sanitizedOffered.length === 0 && sanitizedSought.length === 0) {
+			return res.status(400).json({
+				success: false,
+				errors: ["Please add at least one skill offered or one skill sought."]
+			});
+		}
+		
 		const user = await User.findByIdAndUpdate(
 			req.user.id,
 			{ 
-				skillsOffered: skillsOffered || [],
-				skillsSought: skillsSought || []
+				skillsOffered: sanitizedOffered,
+				skillsSought: sanitizedSought
 			},
 			{ new: true }
 		).select("-password");
@@ -211,7 +232,47 @@ router.put("/skills", auth, async (req, res) => {
 		res.json(user);
 	} catch (err) {
 		console.error(err.message);
-		res.status(500).send("Server error");
+		res.status(500).json({
+			success: false,
+			errors: ["Failed to update skills. Please try again."]
+		});
+	}
+});
+
+// @route   PUT /api/auth/profile
+// @desc    Update user profile
+router.put("/profile", auth, async (req, res) => {
+	try {
+		const { bio } = req.body;
+		
+		// Validate bio
+		if (bio && typeof bio !== 'string') {
+			return res.status(400).json({
+				success: false,
+				errors: ["Bio must be a string."]
+			});
+		}
+
+		if (bio && bio.length > 500) {
+			return res.status(400).json({
+				success: false,
+				errors: ["Bio must be 500 characters or less."]
+			});
+		}
+		
+		const user = await User.findByIdAndUpdate(
+			req.user.id,
+			{ bio: bio ? bio.trim() : '' },
+			{ new: true }
+		).select("-password");
+
+		res.json(user);
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).json({
+			success: false,
+			errors: ["Failed to update profile. Please try again."]
+		});
 	}
 });
 
