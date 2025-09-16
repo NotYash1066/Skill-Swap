@@ -5,11 +5,13 @@ const { check, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
+const { authLimiter, skillsLimiter } = require("../middleware/rateLimit");
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
 router.post(
 	"/register",
+	authLimiter, // Apply auth rate limiting
 	[
 		check("username", "Username is required").not().isEmpty(),
 		check("email", "Please include a valid email").isEmail(),
@@ -76,6 +78,7 @@ router.post(
 // @desc    Authenticate user & get token
 router.post(
 	"/login",
+	authLimiter, // Apply auth rate limiting
 	[
 		check("email", "Please include a valid email").isEmail(),
 		check("password", "Password is required").exists(),
@@ -195,7 +198,7 @@ router.get("/verify-token", (req, res) => {
 
 // @route   PUT /api/auth/skills
 // @desc    Update user skills
-router.put("/skills", auth, async (req, res) => {
+router.put("/skills", auth, skillsLimiter, async (req, res) => {
 	try {
 		const { skillsOffered, skillsSought } = req.body;
 		
