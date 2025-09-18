@@ -10,17 +10,35 @@ const ChatRoom = require('../models/ChatRoom');
 // @access  Private
 router.get('/potential', auth, async (req, res) => {
   try {
+    const { search, skill, minCompatibility = 0 } = req.query;
     const currentUser = await User.findById(req.user.id);
     
-    // Find users whose offered skills match what current user seeks
-    // and whose sought skills match what current user offers
-    const potentialMatches = await User.find({
+    // Build query for finding potential matches
+    let matchQuery = {
       _id: { $ne: req.user.id }, // Exclude current user
+      isActive: { $ne: false }, // Only active users
       $and: [
         { skillsOffered: { $in: currentUser.skillsSought } },
         { skillsSought: { $in: currentUser.skillsOffered } }
       ]
-    }).select('username email skillsOffered skillsSought');
+    };
+
+    // Add username search filter if provided
+    if (search && search.trim()) {
+      matchQuery.username = { $regex: search.trim(), $options: 'i' };
+    }
+
+    // Add specific skill filter if provided
+    if (skill && skill.trim()) {
+      matchQuery.$or = [
+        { skillsOffered: { $regex: skill.trim(), $options: 'i' } },
+        { skillsSought: { $regex: skill.trim(), $options: 'i' } }
+      ];
+    }
+    
+    const potentialMatches = await User.find(matchQuery)
+      .select('username email skillsOffered skillsSought bio createdAt')
+      .limit(50); // Limit results for performance
 
     // Calculate compatibility and matched skills for each potential match
     const matchesWithCompatibility = potentialMatches.map(user => {
@@ -28,12 +46,16 @@ router.get('/potential', auth, async (req, res) => {
       
       // Skills they offer that we want
       const theirOfferedWeWant = user.skillsOffered.filter(skill => 
-        currentUser.skillsSought.includes(skill)
+        currentUser.skillsSought.some(sought => 
+          sought.toLowerCase().includes(skill.toLowerCase())
+        )
       );
       
       // Skills we offer that they want
       const weOfferTheyWant = currentUser.skillsOffered.filter(skill => 
-        user.skillsSought.includes(skill)
+        user.skillsSought.some(sought => 
+          sought.toLowerCase().includes(skill.toLowerCase())
+        )
       );
       
       matchedSkills.push(...theirOfferedWeWant, ...weOfferTheyWant);
@@ -41,8 +63,10 @@ router.get('/potential', auth, async (req, res) => {
       // Remove duplicates
       const uniqueMatchedSkills = [...new Set(matchedSkills)];
       
-      // Calculate compatibility score (simple algorithm)
-      const compatibilityScore = Math.min(uniqueMatchedSkills.length * 20, 100);
+      // Calculate compatibility score (improved algorithm)
+      const baseScore = uniqueMatchedSkills.length * 15;
+      const mutualMatch = theirOfferedWeWant.length > 0 && weOfferTheyWant.length > 0 ? 20 : 0;
+      const compatibilityScore = Math.min(baseScore + mutualMatch, 100);
       
       return {
         ...user.toObject(),
@@ -51,10 +75,15 @@ router.get('/potential', auth, async (req, res) => {
       };
     });
 
-    // Sort by compatibility score (highest first)
-    matchesWithCompatibility.sort((a, b) => b.compatibilityScore - a.compatibilityScore);
+    // Filter by minimum compatibility score if specified
+    const filteredMatches = matchesWithCompatibility.filter(match => 
+      match.compatibilityScore >= parseInt(minCompatibility)
+    );
 
-    res.json(matchesWithCompatibility);
+    // Sort by compatibility score (highest first)
+    filteredMatches.sort((a, b) => b.compatibilityScore - a.compatibilityScore);
+
+    res.json(filteredMatches);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');

@@ -41,8 +41,12 @@ const authRoutes = require("./routes/auth");
 const matchRoutes = require("./routes/matches");
 const chatRoutes = require("./routes/chat");
 
-// Import error handler
+// Import middleware
 const errorHandler = require("./middleware/error");
+const { apiLimiter } = require("./middleware/rateLimit");
+
+// Apply general rate limiting to all API routes
+app.use("/api", apiLimiter);
 
 // Use routes
 app.use("/api/auth", authRoutes);
