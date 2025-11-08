@@ -4,24 +4,51 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 const Match = require('../models/Match');
 const ChatRoom = require('../models/ChatRoom');
+const mongoose = require('mongoose');
 
 // @route   GET /api/matches/potential
 // @desc    Get potential matches based on complementary skills
 // @access  Private
-router.get('/potential', auth, async (req, res) => {
+router.get('/potential', auth, async (req, res, next) => {
   try {
-    const { search, skill, minCompatibility = 0 } = req.query;
+    const { search, skill, minCompatibility = 0, city, country, availability, proficiency, minRating } = req.query;
     const currentUser = await User.findById(req.user.id);
+
+    const userSought = Array.isArray(currentUser?.skillsSought) ? currentUser.skillsSought : [];
+    const userOffered = Array.isArray(currentUser?.skillsOffered) ? currentUser.skillsOffered : [];
+
+    // Exclude users you already have any match with (pending/accepted/rejected)
+    const existingMatches = await Match.find({
+      $or: [
+        { requester: req.user.id },
+        { recipient: req.user.id }
+      ]
+    }).select('requester recipient');
+
+    const me = req.user.id.toString();
+    const excludeIds = new Set();
+    existingMatches.forEach(m => {
+      const requester = m.requester.toString();
+      const recipient = m.recipient.toString();
+      excludeIds.add(requester === me ? recipient : requester);
+    });
+    const excluded = Array.from(excludeIds);
     
     // Build query for finding potential matches
     let matchQuery = {
-      _id: { $ne: req.user.id }, // Exclude current user
-      isActive: { $ne: false }, // Only active users
+      _id: { $ne: req.user.id, ...(excluded.length ? { $nin: excluded } : {}) },
+      isActive: { $ne: false },
       $and: [
-        { skillsOffered: { $in: currentUser.skillsSought } },
-        { skillsSought: { $in: currentUser.skillsOffered } }
+        { skillsOffered: { $in: userSought } },
+        { skillsSought: { $in: userOffered } }
       ]
     };
+
+    // Advanced filters
+    if (city) matchQuery['location.city'] = { $regex: city.trim(), $options: 'i' };
+    if (country) matchQuery['location.country'] = { $regex: country.trim(), $options: 'i' };
+    if (availability) matchQuery.availability = { $in: Array.isArray(availability) ? availability : [availability] };
+    if (minRating) matchQuery.rating = { $gte: parseFloat(minRating) };
 
     // Add username search filter if provided
     if (search && search.trim()) {
@@ -37,23 +64,25 @@ router.get('/potential', auth, async (req, res) => {
     }
     
     const potentialMatches = await User.find(matchQuery)
-      .select('username email skillsOffered skillsSought bio createdAt')
-      .limit(50); // Limit results for performance
+      .select('username email skillsOffered skillsSought bio avatar location availability proficiency rating reviewCount createdAt')
+      .limit(50);
 
     // Calculate compatibility and matched skills for each potential match
     const matchesWithCompatibility = potentialMatches.map(user => {
+      const otherOffered = Array.isArray(user.skillsOffered) ? user.skillsOffered : [];
+      const otherSought = Array.isArray(user.skillsSought) ? user.skillsSought : [];
       const matchedSkills = [];
       
       // Skills they offer that we want
-      const theirOfferedWeWant = user.skillsOffered.filter(skill => 
-        currentUser.skillsSought.some(sought => 
+      const theirOfferedWeWant = otherOffered.filter(skill => 
+        userSought.some(sought => 
           sought.toLowerCase().includes(skill.toLowerCase())
         )
       );
       
       // Skills we offer that they want
-      const weOfferTheyWant = currentUser.skillsOffered.filter(skill => 
-        user.skillsSought.some(sought => 
+      const weOfferTheyWant = userOffered.filter(skill => 
+        otherSought.some(sought => 
           sought.toLowerCase().includes(skill.toLowerCase())
         )
       );
@@ -86,15 +115,37 @@ router.get('/potential', auth, async (req, res) => {
     res.json(filteredMatches);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    return next(err);
   }
 });
 
 // @route   POST /api/matches/request
 // @desc    Send a match request
-router.post('/request', auth, async (req, res) => {
+router.post('/request', auth, async (req, res, next) => {
   try {
     const { recipientId, message, matchedSkills } = req.body;
+
+    // Basic validation
+    if (!recipientId || !mongoose.Types.ObjectId.isValid(recipientId)) {
+      return res.status(400).json({ msg: 'Invalid recipientId' });
+    }
+    if (!message || !message.trim() || message.trim().length > 500) {
+      return res.status(400).json({ msg: 'Message is required and must be <= 500 characters' });
+    }
+    if (!Array.isArray(matchedSkills) || matchedSkills.length === 0) {
+      return res.status(400).json({ msg: 'matchedSkills must be a non-empty array' });
+    }
+
+    // Prevent self-request
+    if (recipientId === req.user.id) {
+      return res.status(400).json({ msg: 'Cannot send a request to yourself' });
+    }
+
+    // Ensure recipient exists
+    const recipient = await User.findById(recipientId).select('_id');
+    if (!recipient) {
+      return res.status(404).json({ msg: 'Recipient not found' });
+    }
 
     // Check if match request already exists
     const existingMatch = await Match.findOne({
@@ -108,13 +159,13 @@ router.post('/request', auth, async (req, res) => {
       return res.status(400).json({ msg: 'Match request already exists' });
     }
 
-    // Calculate compatibility score
-    const compatibilityScore = matchedSkills.length * 20; // Simple scoring
+    // Calculate compatibility score (capped)
+    const compatibilityScore = Math.min((matchedSkills?.length || 0) * 20, 100);
 
     const newMatch = new Match({
       requester: req.user.id,
       recipient: recipientId,
-      message,
+      message: message.trim(),
       matchedSkills,
       compatibilityScore
     });
@@ -122,17 +173,34 @@ router.post('/request', auth, async (req, res) => {
     await newMatch.save();
     await newMatch.populate('requester recipient', 'username email');
 
+    // Create notification for recipient
+    const { createNotification } = require('../utils/notificationHelper');
+    const notification = await createNotification(
+      recipientId,
+      'match_request',
+      `New match request from ${newMatch.requester.username}`,
+      message.trim(),
+      { matchId: newMatch._id }
+    );
+    
+    // Emit real-time notification via socket
+    const io = req.app.get('io');
+    if (io) io.to(`notifications-${recipientId}`).emit('new-notification', notification);
+
     console.log('Match request created:', newMatch);
-    res.json(newMatch);
+    return res.json(newMatch);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    if (err && err.code === 11000) {
+      return res.status(400).json({ msg: 'A request between these users already exists' });
+    }
+    return next(err);
   }
 });
 
 // @route   GET /api/matches/received
 // @desc    Get received match requests
-router.get('/received', auth, async (req, res) => {
+router.get('/received', auth, async (req, res, next) => {
   try {
     const matches = await Match.find({
       recipient: req.user.id,
@@ -144,13 +212,13 @@ router.get('/received', auth, async (req, res) => {
     res.json(matches);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    return next(err);
   }
 });
 
 // @route   GET /api/matches/sent
 // @desc    Get sent match requests
-router.get('/sent', auth, async (req, res) => {
+router.get('/sent', auth, async (req, res, next) => {
   try {
     const matches = await Match.find({
       requester: req.user.id
@@ -160,15 +228,19 @@ router.get('/sent', auth, async (req, res) => {
     res.json(matches);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    return next(err);
   }
 });
 
 // @route   PUT /api/matches/:id/respond
 // @desc    Respond to a match request (accept/reject)
-router.put('/:id/respond', auth, async (req, res) => {
+router.put('/:id/respond', auth, async (req, res, next) => {
   try {
     const { status } = req.body; // 'accepted' or 'rejected'
+
+    if (!['accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({ msg: 'Invalid status' });
+    }
     
     const match = await Match.findById(req.params.id);
     
@@ -186,31 +258,60 @@ router.put('/:id/respond', auth, async (req, res) => {
     }
 
     match.status = status;
+    match.respondedAt = new Date();
     await match.save();
 
-    // If accepted, create a chat room
+    // Create notification for requester
+    const { createNotification } = require('../utils/notificationHelper');
+    await match.populate('requester recipient', 'username');
+    if (status === 'accepted') {
+      const notification = await createNotification(
+        match.requester._id,
+        'match_accepted',
+        `${match.recipient.username} accepted your request!`,
+        'You can now start chatting',
+        { matchId: match._id }
+      );
+      const io = req.app.get('io');
+      if (io) io.to(`notifications-${match.requester._id}`).emit('new-notification', notification);
+    }
+
+    // If accepted, ensure a chat room exists (idempotent)
     if (status === 'accepted') {
       const ChatRoom = require('../models/ChatRoom');
-      
-      const chatRoom = new ChatRoom({
-        participants: [match.requester, match.recipient],
-        match: match._id
+
+      // Try to find an existing room by match or by participants (order-independent)
+      let chatRoom = await ChatRoom.findOne({
+        $or: [
+          { match: match._id },
+          { participants: { $all: [match.requester, match.recipient] } }
+        ]
       });
-      
-      await chatRoom.save();
+
+      if (!chatRoom) {
+        chatRoom = new ChatRoom({
+          participants: [match.requester, match.recipient],
+          match: match._id,
+          isActive: true
+        });
+        await chatRoom.save();
+      } else if (chatRoom.isActive === false) {
+        chatRoom.isActive = true;
+        await chatRoom.save();
+      }
     }
 
     await match.populate('requester recipient', 'username email');
     res.json(match);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    return next(err);
   }
 });
 
 // @route   GET /api/matches/accepted
 // @desc    Get accepted matches (connections)
-router.get('/accepted', auth, async (req, res) => {
+router.get('/accepted', auth, async (req, res, next) => {
   try {
     const matches = await Match.find({
       $or: [
@@ -224,7 +325,7 @@ router.get('/accepted', auth, async (req, res) => {
     res.json(matches);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server error');
+    return next(err);
   }
 });
 
