@@ -6,6 +6,12 @@ const jwt = require("jsonwebtoken");
 const http = require("http");
 const socketIo = require("socket.io");
 
+// Fail fast if critical env vars are missing
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL: JWT_SECRET is not defined. Please set it in your environment or .env file.");
+  process.exit(1);
+}
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -40,6 +46,10 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/SkillSwapDB
 const authRoutes = require("./routes/auth");
 const matchRoutes = require("./routes/matches");
 const chatRoutes = require("./routes/chat");
+const notificationRoutes = require("./routes/notifications");
+
+// Import video handler
+const videoHandler = require("./socketHandlers/videoHandler");
 
 // Import middleware
 const errorHandler = require("./middleware/error");
@@ -52,6 +62,7 @@ app.use("/api", apiLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/matches", matchRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Debug route to verify server is working
 app.get("/api/test", (req, res) => {
@@ -60,6 +71,14 @@ app.get("/api/test", (req, res) => {
 
 // Error handling middleware
 app.use(errorHandler);
+
+// Make io accessible to routes
+app.set('io', io);
+
+// Initialize handlers
+const videoHandlerInstance = videoHandler(io);
+const whiteboardHandler = require("./socketHandlers/whiteboardHandler");
+const whiteboardHandlerInstance = whiteboardHandler(io);
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
@@ -88,6 +107,7 @@ io.on('connection', (socket) => {
       const { roomId, content, senderId } = data;
       const Message = require('./models/Message');
       const ChatRoom = require('./models/ChatRoom');
+      const { createNotification } = require('./utils/notificationHelper');
 
       // Create and save message
       const message = new Message({
@@ -100,13 +120,26 @@ io.on('connection', (socket) => {
       await message.populate('sender', 'username');
 
       // Update chat room
-      const chatRoom = await ChatRoom.findById(roomId);
+      const chatRoom = await ChatRoom.findById(roomId).populate('participants', '_id username');
       chatRoom.lastActivity = new Date();
       chatRoom.lastMessage = message._id;
       await chatRoom.save();
 
       // Emit message to all users in the room
       io.to(roomId).emit('new-message', message);
+
+      // Create notification for recipient
+      const recipient = chatRoom.participants.find(p => p._id.toString() !== senderId);
+      if (recipient) {
+        const notification = await createNotification(
+          recipient._id,
+          'message',
+          `New message from ${message.sender.username}`,
+          content.substring(0, 100),
+          { roomId, messageId: message._id }
+        );
+        io.to(`notifications-${recipient._id}`).emit('new-notification', notification);
+      }
     } catch (err) {
       console.error('Error sending message:', err);
     }
@@ -124,6 +157,11 @@ io.on('connection', (socket) => {
     socket.to(data.roomId).emit('user-stop-typing', {
       userId: data.userId
     });
+  });
+
+  // Join user's notification room
+  socket.on('join-notifications', (userId) => {
+    socket.join(`notifications-${userId}`);
   });
 
   socket.on('disconnect', () => {
