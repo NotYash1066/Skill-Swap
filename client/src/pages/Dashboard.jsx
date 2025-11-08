@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import ThemeToggle from '../components/ThemeToggle';
+import NotificationBell from '../components/NotificationBell';
+import { io } from 'socket.io-client';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
@@ -15,7 +17,14 @@ const Dashboard = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [editingBio, setEditingBio] = useState(false);
   const [newBio, setNewBio] = useState('');
+  const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const newSocket = io('http://localhost:5000');
+    setSocket(newSocket);
+    return () => newSocket.close();
+  }, []);
 
   useEffect(() => {
     fetchUserData();
@@ -241,6 +250,7 @@ const Dashboard = () => {
             <Link to="/matches" className="nav-link">Matches</Link>
             <Link to="/chat" className="nav-link">Chat</Link>
             <span>Welcome, {user?.username}!</span>
+            <NotificationBell socket={socket} />
             <ThemeToggle />
             <button onClick={handleLogout} className="logout-btn">Logout</button>
           </nav>
