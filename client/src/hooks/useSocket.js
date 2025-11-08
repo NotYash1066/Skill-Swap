@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 
 const useSocket = (userId) => {
   const socketRef = useRef(null);
+  const [socketInstance, setSocketInstance] = useState(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -16,17 +17,20 @@ const useSocket = (userId) => {
 
     socket.on('connect', () => {
       console.log('Connected to server:', socket.id);
+      setSocketInstance(socket);
       // Join user to their chat rooms
       socket.emit('join-rooms', userId);
     });
 
     socket.on('disconnect', () => {
       console.log('Disconnected from server');
+      setSocketInstance(null);
     });
 
     return () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
+        setSocketInstance(null);
       }
     };
   }, [userId]);
@@ -92,6 +96,7 @@ const useSocket = (userId) => {
   };
 
   return {
+    socket: socketInstance,
     sendMessage,
     startTyping,
     stopTyping,

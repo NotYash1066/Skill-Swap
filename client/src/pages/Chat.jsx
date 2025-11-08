@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FiVideo, FiPhone } from 'react-icons/fi';
 import axios from 'axios';
 import useSocket from '../hooks/useSocket';
+// Video calling UI is globally mounted via VideoCallProvider
+import Whiteboard from '../components/collaboration/Whiteboard';
 import '../styles/Chat.css';
 
 const Chat = () => {
@@ -12,6 +15,8 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [typingUsers, setTypingUsers] = useState([]);
+// Video calls are handled globally via context
+  const [showWhiteboard, setShowWhiteboard] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
@@ -30,7 +35,16 @@ const Chat = () => {
   };
 
   const currentUserId = getCurrentUserId();
-  const { sendMessage: socketSendMessage, onNewMessage, onUserTyping, onUserStopTyping, startTyping, stopTyping, offNewMessage, offUserTyping } = useSocket(currentUserId);
+  const { socket, sendMessage: socketSendMessage, onNewMessage, onUserTyping, onUserStopTyping, startTyping, stopTyping, offNewMessage, offUserTyping } = useSocket(currentUserId);
+  
+  // Get current user info for video calls
+  const getCurrentUser = () => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      return JSON.parse(storedUser);
+    }
+    return { id: currentUserId, username: 'User' };
+  };
 
   useEffect(() => {
     fetchChatRooms();
@@ -165,6 +179,31 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+// Video call functions
+  const startVideoCall = async () => {
+    if (!selectedRoom) {
+      console.error('No room selected');
+      return;
+    }
+
+    const otherParticipant = getOtherParticipant(selectedRoom);
+    if (!otherParticipant) {
+      console.error('No other participant found');
+      return;
+    }
+
+    // Use global video call context to initiate the call
+    window.dispatchEvent(new CustomEvent('global-video-call-initiate', { detail: { targetUserId: otherParticipant._id, targetUserName: otherParticipant.username } }));
+  };
+
+const handleCallEnd = () => {
+  console.log('Video call ended');
+};
+
+  // Whiteboard handlers
+  const openWhiteboard = () => setShowWhiteboard(true);
+  const closeWhiteboard = () => setShowWhiteboard(false);
+
   if (loading) {
     return (
       <div className="chat-container">
@@ -188,8 +227,19 @@ const Chat = () => {
   }
 
   return (
-    <div className="chat-container">
-      <div className="chat-sidebar">
+    <>
+
+      {/* Whiteboard Overlay */}
+      {showWhiteboard && selectedRoom && socket && (
+        <Whiteboard 
+          socket={socket}
+          roomId={selectedRoom._id}
+          onClose={closeWhiteboard}
+        />
+      )}
+      
+      <div className="chat-container">
+        <div className="chat-sidebar">
         <div className="sidebar-header">
           <h2>Messages</h2>
           <button onClick={() => navigate('/dashboard')} className="back-btn">
@@ -236,6 +286,23 @@ const Chat = () => {
                   <h3>{getOtherParticipant(selectedRoom)?.username}</h3>
                   <p className="user-email">{getOtherParticipant(selectedRoom)?.email}</p>
                 </div>
+              </div>
+              <div className="chat-actions">
+                <button 
+                  className="video-call-btn"
+                  onClick={startVideoCall}
+                  title="Start video call"
+                >
+                  <FiVideo size={20} />
+                  <span>Video Call</span>
+                </button>
+                <button 
+                  className="video-call-btn"
+                  onClick={openWhiteboard}
+                  title="Open Whiteboard"
+                >
+                  <span>Whiteboard</span>
+                </button>
               </div>
             </div>
 
@@ -292,7 +359,8 @@ const Chat = () => {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
