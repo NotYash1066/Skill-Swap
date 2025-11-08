@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { VideoCallProvider } from "./contexts/VideoCallContext";
+import GlobalVideoCall from "./components/video/GlobalVideoCall";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -27,36 +29,40 @@ function App() {
 
   return (
     <ThemeProvider>
-      <Router>
-        <div className="App">
-          <Routes>
-            <Route 
-              path="/login" 
-              element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} 
-            />
-            <Route 
-              path="/register" 
-              element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} 
-            />
-            <Route 
-              path="/dashboard" 
-              element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} 
-            />
-            <Route 
-              path="/matches" 
-              element={isAuthenticated ? <Matches /> : <Navigate to="/login" />} 
-            />
-            <Route 
-              path="/chat" 
-              element={isAuthenticated ? <Chat /> : <Navigate to="/login" />} 
-            />
-            <Route 
-              path="/" 
-              element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} 
-            />
-          </Routes>
-        </div>
-      </Router>
+      <VideoCallProvider>
+        <Router>
+          <div className="App">
+            {/* Global video call overlay mounted at app level */}
+            <GlobalVideoCall />
+            <Routes>
+              <Route 
+                path="/login" 
+                element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} 
+              />
+              <Route 
+                path="/register" 
+                element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} 
+              />
+              <Route 
+                path="/dashboard" 
+                element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} 
+              />
+              <Route 
+                path="/matches" 
+                element={isAuthenticated ? <Matches /> : <Navigate to="/login" />} 
+              />
+              <Route 
+                path="/chat" 
+                element={isAuthenticated ? <Chat /> : <Navigate to="/login" />} 
+              />
+              <Route 
+                path="/" 
+                element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} 
+              />
+            </Routes>
+          </div>
+        </Router>
+      </VideoCallProvider>
     </ThemeProvider>
   );
 }
