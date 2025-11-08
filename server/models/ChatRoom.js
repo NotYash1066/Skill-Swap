@@ -9,7 +9,12 @@ const ChatRoomSchema = new mongoose.Schema({
   match: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Match',
-    required: true
+    required: true,
+    unique: true
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   },
   lastMessage: {
     type: mongoose.Schema.Types.ObjectId,
@@ -36,6 +41,6 @@ ChatRoomSchema.pre('save', function(next) {
 
 // Index for efficient queries
 ChatRoomSchema.index({ participants: 1 });
-ChatRoomSchema.index({ match: 1 });
+ChatRoomSchema.index({ match: 1 }, { unique: true });
 
 module.exports = mongoose.model('ChatRoom', ChatRoomSchema);

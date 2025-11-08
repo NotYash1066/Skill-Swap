@@ -32,7 +32,8 @@ router.get('/rooms/:roomId/messages', auth, async (req, res) => {
     
     // Verify user is participant in this chat room
     const chatRoom = await ChatRoom.findById(req.params.roomId);
-    if (!chatRoom || !chatRoom.participants.includes(req.user.id)) {
+    const isParticipant = chatRoom && chatRoom.participants.some(p => p.toString() === req.user.id);
+    if (!isParticipant) {
       return res.status(403).json({ msg: 'Access denied' });
     }
 
@@ -68,7 +69,8 @@ router.post('/rooms/:roomId/messages', auth, async (req, res) => {
     
     // Verify user is participant in this chat room
     const chatRoom = await ChatRoom.findById(req.params.roomId);
-    if (!chatRoom || !chatRoom.participants.includes(req.user.id)) {
+    const isParticipant = chatRoom && chatRoom.participants.some(p => p.toString() === req.user.id);
+    if (!isParticipant) {
       return res.status(403).json({ msg: 'Access denied' });
     }
 
@@ -128,7 +130,8 @@ router.put('/rooms/:roomId/read', auth, async (req, res) => {
 
     // Verify user is participant in this room
     const chatRoom = await ChatRoom.findById(roomId);
-    if (!chatRoom || !chatRoom.participants.includes(req.user.id)) {
+    const isParticipant = chatRoom && chatRoom.participants.some(p => p.toString() === req.user.id);
+    if (!isParticipant) {
       return res.status(403).json({ msg: 'Access denied' });
     }
 
