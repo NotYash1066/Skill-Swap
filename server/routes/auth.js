@@ -20,7 +20,7 @@ router.post(
 			"Please enter a password with 6 or more characters"
 		).isLength({ min: 6 }),
 	],
-	async (req, res) => {
+	async (req, res, next) => {
 		// Check for validation errors
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
@@ -51,25 +51,16 @@ router.post(
 
 			await user.save();
 
-			// Create JWT token
+			// Create JWT token (synchronously so errors are caught by this try/catch)
 			const payload = {
 				user: {
 					id: user.id,
 				},
 			};
-
-			jwt.sign(
-				payload,
-				process.env.JWT_SECRET,
-				{ expiresIn: "5h" },
-				(err, token) => {
-					if (err) throw err;
-					res.json({ token });
-				}
-			);
+			const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "5h" });
+			return res.json({ success: true, token });
 		} catch (err) {
-			console.error(err.message);
-			res.status(500).send("Server error");
+			return next(err);
 		}
 	}
 );
@@ -83,7 +74,7 @@ router.post(
 		check("email", "Please include a valid email").isEmail(),
 		check("password", "Password is required").exists(),
 	],
-	async (req, res) => {
+	async (req, res, next) => {
 		// Check for validation errors
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
@@ -109,38 +100,28 @@ router.post(
 				});
 			}
 
-			// Create JWT token
+			// Create JWT token (synchronously so errors are caught by this try/catch)
 			const payload = {
 				user: {
 					id: user.id,
 				},
 			};
-
-			jwt.sign(
-				payload,
-				process.env.JWT_SECRET,
-				{ expiresIn: "5h" },
-				(err, token) => {
-					if (err) throw err;
-					res.json({ token });
-				}
-			);
+			const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "5h" });
+			return res.json({ success: true, token });
 		} catch (err) {
-			console.error(err.message);
-			res.status(500).send("Server error");
+			return next(err);
 		}
 	}
 );
 
 // @route   GET /api/auth/me
 // @desc    Get current user
-router.get("/me", auth, async (req, res) => {
+router.get("/me", auth, async (req, res, next) => {
 	try {
 		const user = await User.findById(req.user.id).select("-password");
 		res.json(user);
 	} catch (err) {
-		console.error(err.message);
-		res.status(500).send("Server error");
+		return next(err);
 	}
 });
 
@@ -246,36 +227,43 @@ router.put("/skills", auth, skillsLimiter, async (req, res) => {
 // @desc    Update user profile
 router.put("/profile", auth, async (req, res) => {
 	try {
-		const { bio } = req.body;
+		const { bio, avatar, location, availability, proficiency } = req.body;
+		const updates = {};
 		
-		// Validate bio
-		if (bio && typeof bio !== 'string') {
-			return res.status(400).json({
-				success: false,
-				errors: ["Bio must be a string."]
-			});
+		if (bio !== undefined) {
+			if (typeof bio !== 'string' || bio.length > 500) {
+				return res.status(400).json({ errors: ["Bio must be a string, max 500 chars"] });
+			}
+			updates.bio = bio.trim();
 		}
 
-		if (bio && bio.length > 500) {
-			return res.status(400).json({
-				success: false,
-				errors: ["Bio must be 500 characters or less."]
-			});
-		}
+		if (avatar !== undefined) updates.avatar = avatar;
+		if (location) updates.location = location;
+		if (availability) updates.availability = availability;
+		if (proficiency) updates.proficiency = proficiency;
 		
 		const user = await User.findByIdAndUpdate(
 			req.user.id,
-			{ bio: bio ? bio.trim() : '' },
+			updates,
 			{ new: true }
 		).select("-password");
 
 		res.json(user);
 	} catch (err) {
 		console.error(err.message);
-		res.status(500).json({
-			success: false,
-			errors: ["Failed to update profile. Please try again."]
-		});
+		res.status(500).json({ errors: ["Failed to update profile"] });
+	}
+});
+
+// @route   GET /api/auth/user/:id
+// @desc    Get user profile by ID
+router.get("/user/:id", async (req, res, next) => {
+	try {
+		const user = await User.findById(req.params.id).select("-password");
+		if (!user) return res.status(404).json({ msg: 'User not found' });
+		res.json(user);
+	} catch (err) {
+		return next(err);
 	}
 });
 
