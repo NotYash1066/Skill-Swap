@@ -114,6 +114,9 @@
   border-bottom: 1px solid var(--border-color);
   background: var(--gradient-primary);
   color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .chat-user-info {
@@ -143,6 +146,39 @@
 .user-email {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
+}
+
+/* Chat Actions */
+.chat-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.video-call-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  backdrop-filter: blur(10px);
+}
+
+.video-call-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.video-call-btn:active {
+  transform: translateY(0px);
 }
 
 .chat-messages {
@@ -308,5 +344,25 @@
   
   .chat-main {
     width: 100%;
+  }
+  
+  .chat-header {
+    flex-direction: column;
+    gap: var(--space-md);
+    align-items: flex-start;
+  }
+  
+  .chat-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .video-call-btn {
+    padding: var(--space-xs) var(--space-md);
+    font-size: var(--font-size-xs);
+  }
+  
+  .video-call-btn span {
+    display: none;
   }
 }

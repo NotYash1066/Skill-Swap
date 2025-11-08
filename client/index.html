@@ -8,6 +8,11 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Polyfills for libraries expecting Node globals in the browser -->
+    <script>
+      window.global = window.global || window;
+      window.process = window.process || { env: {} };
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
