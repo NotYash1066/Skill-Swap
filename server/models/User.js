@@ -30,16 +30,17 @@ const UserSchema = new mongoose.Schema(
 			maxlength: 500,
 			trim: true
 		},
-		skillsOffered: [{ 
-			type: String,
-			trim: true,
-			maxlength: 50
-		}],
-		skillsSought: [{ 
-			type: String,
-			trim: true,
-			maxlength: 50
-		}],
+		avatar: { type: String, default: '' },
+		location: { 
+			city: { type: String, default: '' },
+			country: { type: String, default: '' }
+		},
+		availability: [{ type: String, enum: ['weekday_morning', 'weekday_afternoon', 'weekday_evening', 'weekend_morning', 'weekend_afternoon', 'weekend_evening'] }],
+		skillsOffered: { type: [String], default: [] },
+		skillsSought: { type: [String], default: [] },
+		proficiency: { type: Map, of: String, default: {} },
+		rating: { type: Number, default: 0, min: 0, max: 5 },
+		reviewCount: { type: Number, default: 0 },
 		isActive: {
 			type: Boolean,
 			default: true
@@ -56,10 +57,15 @@ UserSchema.index({ email: 1 });
 UserSchema.index({ username: 1 });
 UserSchema.index({ skillsOffered: 1 });
 UserSchema.index({ skillsSought: 1 });
+UserSchema.index({ 'location.city': 1 });
+UserSchema.index({ 'location.country': 1 });
+UserSchema.index({ rating: -1 });
 
-// Virtual for user's full skill set
+// Virtual for user's full skill set (safe for undefined/null arrays)
 UserSchema.virtual('allSkills').get(function() {
-	return [...this.skillsOffered, ...this.skillsSought];
+	const offered = Array.isArray(this.skillsOffered) ? this.skillsOffered : [];
+	const sought = Array.isArray(this.skillsSought) ? this.skillsSought : [];
+	return [...offered, ...sought];
 });
 
 // Ensure virtual fields are serialized
