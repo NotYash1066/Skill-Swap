@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import ThemeToggle from '../components/ThemeToggle';
+import AdvancedSearch from '../components/AdvancedSearch';
+import UserProfile from '../components/UserProfile';
+import { FiStar } from 'react-icons/fi';
 import '../styles/Matches.css';
 
 const Matches = () => {
@@ -12,19 +15,28 @@ const Matches = () => {
   const [loading, setLoading] = useState(true);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [matchMessage, setMatchMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [filters, setFilters] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [filters]);
 
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
 
+      const params = new URLSearchParams();
+      if (filters.city) params.append('city', filters.city);
+      if (filters.country) params.append('country', filters.country);
+      if (filters.minRating) params.append('minRating', filters.minRating);
+      if (filters.availability?.length) filters.availability.forEach(a => params.append('availability', a));
+
       const [potentialRes, receivedRes, sentRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/matches/potential', { headers }),
+        axios.get(`http://localhost:5000/api/matches/potential?${params}`, { headers }),
         axios.get('http://localhost:5000/api/matches/received', { headers }),
         axios.get('http://localhost:5000/api/matches/sent', { headers })
       ]);
@@ -39,12 +51,19 @@ const Matches = () => {
       setLoading(false);
     } catch (err) {
       console.error('Error fetching matches:', err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/login');
+        return;
+      }
       setLoading(false);
     }
   };
 
   const sendMatchRequest = async (recipientId, matchedSkills) => {
     try {
+      setSending(true);
       const token = localStorage.getItem('token');
       const response = await axios.post('http://localhost:5000/api/matches/request', {
         recipientId,
@@ -57,12 +76,17 @@ const Matches = () => {
       console.log('Match request sent successfully:', response.data);
       setSelectedMatch(null);
       setMatchMessage('');
-      fetchData(); // Refresh data
+      await fetchData(); // Refresh data
     } catch (err) {
       console.error('Error sending match request:', err);
-      if (err.response?.data?.msg) {
-        alert(`Error: ${err.response.data.msg}`);
-      }
+      const serverMsg = err.response?.data?.msg
+        || err.response?.data?.errors?.[0]
+        || err.response?.data?.message
+        || err.message
+        || 'Failed to send request. Please try again.';
+      alert(`Error: ${serverMsg}`);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -94,9 +118,20 @@ const Matches = () => {
     return potentialMatches.map(match => (
       <div key={match._id} className="match-card">
         <div className="match-header">
-          <h3>{match.username}</h3>
-          <div className="compatibility-score">{match.compatibilityScore}% Match</div>
+          <h3 onClick={() => setSelectedUserId(match._id)} style={{cursor: 'pointer'}}>{match.username}</h3>
+          <div className="match-info">
+            {match.rating > 0 && (
+              <div className="rating">
+                <FiStar fill="#ffd700" color="#ffd700" size={16} />
+                <span>{match.rating.toFixed(1)}</span>
+              </div>
+            )}
+            <div className="compatibility-score">{match.compatibilityScore}% Match</div>
+          </div>
         </div>
+        {match.location?.city && (
+          <p className="location">📍 {match.location.city}{match.location.country ? `, ${match.location.country}` : ''}</p>
+        )}
         
         <div className="match-skills">
           <div className="skills-section">
@@ -249,6 +284,7 @@ const Matches = () => {
         </div>
         <h1>Find Your Perfect Match</h1>
         <p>Connect with people who have the skills you need and want to learn what you offer</p>
+        <AdvancedSearch onSearch={setFilters} />
       </div>
 
       <div className="matches-content">
@@ -317,13 +353,17 @@ const Matches = () => {
               <button 
                 className="send-btn"
                 onClick={() => sendMatchRequest(selectedMatch._id, selectedMatch.matchedSkills)}
-                disabled={!matchMessage.trim()}
+                disabled={sending || !matchMessage.trim()}
               >
-                Send Request
+                {sending ? 'Sending...' : 'Send Request'}
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {selectedUserId && (
+        <UserProfile userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
       )}
     </div>
   );

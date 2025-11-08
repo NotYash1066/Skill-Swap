@@ -132,6 +132,25 @@
   color: var(--text-primary);
 }
 
+.match-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.location {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
 .compatibility-score {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   color: white;
