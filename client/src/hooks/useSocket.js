@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
+import { API_BASE_URL } from '../config/api';
 
 const useSocket = (userId) => {
   const socketRef = useRef(null);
@@ -9,7 +10,7 @@ const useSocket = (userId) => {
     if (!userId) return;
 
     // Initialize socket connection
-    socketRef.current = io('http://localhost:5000', {
+    socketRef.current = io(API_BASE_URL, {
       transports: ['websocket']
     });
 

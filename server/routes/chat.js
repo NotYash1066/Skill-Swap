@@ -9,7 +9,7 @@ const { isValidObjectId } = require('../utils/validators');
 
 // @route   GET /api/chat/rooms
 // @desc    Get user's chat rooms
-router.get('/rooms', auth, async (req, res) => {
+router.get('/rooms', auth, async (req, res, next) => {
   try {
     const chatRooms = await ChatRoom.find({
       participants: req.user.id,
@@ -21,7 +21,6 @@ router.get('/rooms', auth, async (req, res) => {
 
     res.json(chatRooms);
   } catch (err) {
-    console.error('Error fetching chat rooms:', err.message);
     return next(err);
   }
 });
@@ -62,7 +61,6 @@ router.get('/rooms/:roomId/messages', auth, async (req, res, next) => {
 
     res.json(messages.reverse()); // Return in chronological order
   } catch (err) {
-    console.error('Error fetching messages:', err.message);
     return next(err);
   }
 });
@@ -108,7 +106,6 @@ router.post('/rooms/:roomId/messages', auth, async (req, res, next) => {
 
     res.json(message);
   } catch (err) {
-    console.error('Error sending message:', err.message);
     return next(err);
   }
 });
@@ -134,7 +131,6 @@ router.get('/unread', auth, async (req, res, next) => {
 
     res.json({ unreadCount });
   } catch (err) {
-    console.error('Error fetching unread count:', err.message);
     return next(err);
   }
 });
@@ -176,7 +172,6 @@ router.put('/rooms/:roomId/read', auth, async (req, res, next) => {
 
     res.json({ msg: 'Messages marked as read' });
   } catch (err) {
-    console.error('Error marking messages as read:', err.message);
     return next(err);
   }
 });

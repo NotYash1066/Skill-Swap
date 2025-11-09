@@ -68,6 +68,7 @@ const authRoutes = require("./routes/auth");
 const matchRoutes = require("./routes/matches");
 const chatRoutes = require("./routes/chat");
 const notificationRoutes = require("./routes/notifications");
+const reviewRoutes = require("./routes/reviews");
 
 // Import video handler
 const videoHandler = require("./socketHandlers/videoHandler");
@@ -84,6 +85,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/matches", matchRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // Debug route to verify server is working
 app.get("/api/test", (req, res) => {
@@ -191,3 +193,15 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  logger.error('Unhandled Promise Rejection:', err);
+  server.close(() => process.exit(1));
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught Exception:', err);
+  process.exit(1);
+});

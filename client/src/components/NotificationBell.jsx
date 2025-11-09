@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FiBell } from 'react-icons/fi';
+import { API_ENDPOINTS } from '../config/api';
 import '../styles/NotificationBell.css';
 
 const NotificationBell = ({ socket }) => {
@@ -24,7 +25,7 @@ const NotificationBell = ({ socket }) => {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/notifications', {
+      const res = await axios.get(API_ENDPOINTS.NOTIFICATIONS.LIST, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(res.data);
@@ -37,7 +38,7 @@ const NotificationBell = ({ socket }) => {
   const markAsRead = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/notifications/${id}/read`, {}, {
+      await axios.put(API_ENDPOINTS.NOTIFICATIONS.READ(id), {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));

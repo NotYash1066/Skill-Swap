@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import io from 'socket.io-client';
+import { API_BASE_URL } from '../config/api';
 import useVideoCall from '../hooks/useVideoCall';
 
 const VideoCallContext = createContext(null);
@@ -31,7 +32,7 @@ export const VideoCallProvider = ({ children }) => {
   useEffect(() => {
     if (!currentUser) return;
 
-    const s = io('http://localhost:5000', { transports: ['websocket'] });
+    const s = io(API_BASE_URL, { transports: ['websocket'] });
     setSocket(s);
 
     s.on('connect', () => {

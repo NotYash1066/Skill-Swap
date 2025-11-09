@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 import ThemeToggle from '../components/ThemeToggle';
 import AdvancedSearch from '../components/AdvancedSearch';
 import UserProfile from '../components/UserProfile';
@@ -36,9 +37,9 @@ const Matches = () => {
       if (filters.availability?.length) filters.availability.forEach(a => params.append('availability', a));
 
       const [potentialRes, receivedRes, sentRes] = await Promise.all([
-        axios.get(`http://localhost:5000/api/matches/potential?${params}`, { headers }),
-        axios.get('http://localhost:5000/api/matches/received', { headers }),
-        axios.get('http://localhost:5000/api/matches/sent', { headers })
+        axios.get(`${API_ENDPOINTS.MATCHES.POTENTIAL}?${params}`, { headers }),
+        axios.get(API_ENDPOINTS.MATCHES.RECEIVED, { headers }),
+        axios.get(API_ENDPOINTS.MATCHES.SENT, { headers })
       ]);
 
       console.log('Potential matches:', potentialRes.data);
@@ -65,7 +66,7 @@ const Matches = () => {
     try {
       setSending(true);
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/matches/request', {
+      const response = await axios.post(API_ENDPOINTS.MATCHES.REQUEST, {
         recipientId,
         message: matchMessage,
         matchedSkills
@@ -93,7 +94,7 @@ const Matches = () => {
   const respondToMatch = async (matchId, status) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/matches/${matchId}/respond`, {
+      await axios.put(API_ENDPOINTS.MATCHES.RESPOND(matchId), {
         status
       }, {
         headers: { Authorization: `Bearer ${token}` }

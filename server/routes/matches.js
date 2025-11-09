@@ -122,7 +122,6 @@ router.get('/potential', auth, async (req, res, next) => {
 
     res.json(filteredMatches);
   } catch (err) {
-    console.error(err.message);
     return next(err);
   }
 });
@@ -194,10 +193,8 @@ router.post('/request', auth, async (req, res, next) => {
     const io = req.app.get('io');
     if (io) io.to(`notifications-${recipientId}`).emit('new-notification', notification);
 
-    console.log('Match request created:', newMatch);
     return res.json(newMatch);
   } catch (err) {
-    console.error(err.message);
     if (err && err.code === 11000) {
       return res.status(400).json({ msg: 'A request between these users already exists' });
     }
@@ -215,10 +212,8 @@ router.get('/received', auth, async (req, res, next) => {
     }).populate('requester', 'username email skillsOffered skillsSought')
       .sort({ createdAt: -1 });
 
-    console.log(`Found ${matches.length} received match requests for user ${req.user.id}`);
     res.json(matches);
   } catch (err) {
-    console.error(err.message);
     return next(err);
   }
 });
@@ -234,7 +229,6 @@ router.get('/sent', auth, async (req, res, next) => {
 
     res.json(matches);
   } catch (err) {
-    console.error(err.message);
     return next(err);
   }
 });
@@ -309,7 +303,6 @@ router.put('/:id/respond', auth, async (req, res, next) => {
     await match.populate('requester recipient', 'username email');
     res.json(match);
   } catch (err) {
-    console.error(err.message);
     return next(err);
   }
 });
@@ -329,7 +322,6 @@ router.get('/accepted', auth, async (req, res, next) => {
 
     res.json(matches);
   } catch (err) {
-    console.error(err.message);
     return next(err);
   }
 });

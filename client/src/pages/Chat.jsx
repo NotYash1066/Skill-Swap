@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiVideo, FiPhone } from 'react-icons/fi';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 import useSocket from '../hooks/useSocket';
 // Video calling UI is globally mounted via VideoCallProvider
 import Whiteboard from '../components/collaboration/Whiteboard';
@@ -89,7 +90,7 @@ const Chat = () => {
   const fetchChatRooms = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/chat/rooms', {
+      const response = await axios.get(API_ENDPOINTS.CHAT.ROOMS, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -105,7 +106,7 @@ const Chat = () => {
   const fetchMessages = async (roomId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/chat/rooms/${roomId}/messages`, {
+      const response = await axios.get(API_ENDPOINTS.CHAT.MESSAGES(roomId), {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -122,7 +123,7 @@ const Chat = () => {
     setSendingMessage(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(`http://localhost:5000/api/chat/rooms/${selectedRoom._id}/messages`, {
+      const response = await axios.post(API_ENDPOINTS.CHAT.MESSAGES(selectedRoom._id), {
         content: newMessage
       }, {
         headers: { Authorization: `Bearer ${token}` }

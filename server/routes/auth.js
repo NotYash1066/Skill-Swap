@@ -179,7 +179,7 @@ router.get("/verify-token", (req, res) => {
 
 // @route   PUT /api/auth/skills
 // @desc    Update user skills
-router.put("/skills", auth, skillsLimiter, async (req, res) => {
+router.put("/skills", auth, skillsLimiter, async (req, res, next) => {
 	try {
 		const { skillsOffered, skillsSought } = req.body;
 		
@@ -215,14 +215,13 @@ router.put("/skills", auth, skillsLimiter, async (req, res) => {
 
 		res.json(user);
 	} catch (err) {
-		console.error('Error updating skills:', err.message);
 		return next(err);
 	}
 });
 
 // @route   PUT /api/auth/profile
 // @desc    Update user profile
-router.put("/profile", auth, async (req, res) => {
+router.put("/profile", auth, async (req, res, next) => {
 	try {
 		const { bio, avatar, location, availability, proficiency } = req.body;
 		const updates = {};
@@ -247,7 +246,6 @@ router.put("/profile", auth, async (req, res) => {
 
 		res.json(user);
 	} catch (err) {
-		console.error('Error updating profile:', err.message);
 		return next(err);
 	}
 });

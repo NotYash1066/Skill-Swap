@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FiStar } from 'react-icons/fi';
+import { API_ENDPOINTS } from '../config/api';
 import '../styles/UserProfile.css';
 
 const UserProfile = ({ userId, onClose }) => {
@@ -16,7 +17,7 @@ const UserProfile = ({ userId, onClose }) => {
   const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/auth/user/${userId}`, {
+      const res = await axios.get(API_ENDPOINTS.AUTH.USER(userId), {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUser(res.data);
@@ -29,7 +30,7 @@ const UserProfile = ({ userId, onClose }) => {
 
   const fetchReviews = async () => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/reviews/user/${userId}`);
+      const res = await axios.get(API_ENDPOINTS.REVIEWS.USER(userId));
       setReviews(res.data);
     } catch (err) {
       console.error('Error fetching reviews:', err);

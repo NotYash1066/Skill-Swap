@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
+import { io } from 'socket.io-client';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
 import ThemeToggle from '../components/ThemeToggle';
 import NotificationBell from '../components/NotificationBell';
-import { io } from 'socket.io-client';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
@@ -21,7 +22,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(API_BASE_URL);
     setSocket(newSocket);
     return () => newSocket.close();
   }, []);
@@ -69,7 +70,7 @@ const Dashboard = () => {
         return;
       }
       
-      const response = await axios.get('http://localhost:5000/api/auth/me', {
+      const response = await axios.get(API_ENDPOINTS.AUTH.ME, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -174,7 +175,7 @@ const Dashboard = () => {
   const updateSkills = async (offered, sought) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.put('http://localhost:5000/api/auth/skills', {
+      const response = await axios.put(API_ENDPOINTS.AUTH.SKILLS, {
         skillsOffered: offered,
         skillsSought: sought
       }, {
@@ -205,7 +206,7 @@ const Dashboard = () => {
   const updateBio = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.put('http://localhost:5000/api/auth/profile', {
+      const response = await axios.put(API_ENDPOINTS.AUTH.PROFILE, {
         bio: newBio.trim()
       }, {
         headers: { Authorization: `Bearer ${token}` }
