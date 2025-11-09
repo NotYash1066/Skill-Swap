@@ -19,14 +19,33 @@ if (!process.env.JWT_SECRET) {
 const helmet = require('helmet');
 const { sanitizeInput } = require('./middleware/inputValidation');
 const validateContentType = require('./middleware/contentType');
+const requestLogger = require('./middleware/requestLogger');
+const timeout = require('./middleware/timeout');
 
 const app = express();
 const server = http.createServer(app);
 
 // Security headers
 app.use(helmet({
-  contentSecurityPolicy: false, // Disable for development, enable in production
-  crossOriginEmbedderPolicy: false
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"]
+    }
+  } : false,
+  crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
 }));
 const io = socketIo(server, {
   cors: {
@@ -44,16 +63,12 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
+app.use(timeout(30));
+app.use(requestLogger);
 app.use(validateContentType);
 app.use(sanitizeInput);
 
-// Debug middleware
-if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    logger.info(`${req.method} ${req.url}`);
-    next();
-  });
-}
+
 
 // Root route handler
 app.get("/", (req, res) => {
@@ -114,11 +129,11 @@ io.on('connection', (socket) => {
   // Join user to their chat rooms
   socket.on('join-rooms', async (userId) => {
     try {
-      if (!mongoose.Types.ObjectId.isValid(userId)) return;
+      if (!userId || typeof userId !== 'string' || !mongoose.Types.ObjectId.isValid(userId)) return;
       const userRooms = await ChatRoom.find({
         participants: userId,
         isActive: true
-      });
+      }).limit(100);
       
       userRooms.forEach(room => {
         socket.join(room._id.toString());
@@ -132,8 +147,9 @@ io.on('connection', (socket) => {
   socket.on('send-message', async (data) => {
     try {
       const { roomId, content, senderId } = data;
+      if (!roomId || !senderId || !content) return;
       if (!mongoose.Types.ObjectId.isValid(roomId) || !mongoose.Types.ObjectId.isValid(senderId)) return;
-      if (!content || typeof content !== 'string' || content.length > 5000) return;
+      if (typeof content !== 'string' || content.trim().length === 0 || content.length > 5000) return;
 
       // Create and save message
       const message = new Message({
@@ -173,13 +189,15 @@ io.on('connection', (socket) => {
 
   // Handle typing indicators
   socket.on('typing', (data) => {
+    if (!data?.roomId || !data?.userId) return;
     socket.to(data.roomId).emit('user-typing', {
       userId: data.userId,
-      username: data.username
+      username: data.username || 'User'
     });
   });
 
   socket.on('stop-typing', (data) => {
+    if (!data?.roomId || !data?.userId) return;
     socket.to(data.roomId).emit('user-stop-typing', {
       userId: data.userId
     });
@@ -187,6 +205,7 @@ io.on('connection', (socket) => {
 
   // Join user's notification room
   socket.on('join-notifications', (userId) => {
+    if (!userId || typeof userId !== 'string') return;
     socket.join(`notifications-${userId}`);
   });
 

@@ -14,8 +14,17 @@ router.post(
 	"/register",
 	authLimiter, // Apply auth rate limiting
 	[
-		check("username", "Username is required").not().isEmpty(),
-		check("email", "Please include a valid email").isEmail(),
+		check("username")
+			.trim()
+			.isLength({ min: 3, max: 30 })
+			.withMessage("Username must be 3-30 characters")
+			.matches(/^[a-zA-Z0-9_]+$/)
+			.withMessage("Username can only contain letters, numbers, and underscores"),
+		check("email")
+			.trim()
+			.isEmail()
+			.withMessage("Please include a valid email")
+			.normalizeEmail(),
 		check("password")
 			.isLength({ min: 8 })
 			.withMessage("Password must be at least 8 characters")
@@ -73,8 +82,14 @@ router.post(
 	"/login",
 	authLimiter, // Apply auth rate limiting
 	[
-		check("email", "Please include a valid email").isEmail(),
-		check("password", "Password is required").exists(),
+		check("email")
+			.trim()
+			.isEmail()
+			.withMessage("Please include a valid email")
+			.normalizeEmail(),
+		check("password")
+			.exists()
+			.withMessage("Password is required"),
 	],
 	async (req, res, next) => {
 		// Check for validation errors

@@ -34,7 +34,8 @@ router.get('/rooms/:roomId/messages', auth, validateObjectId, async (req, res, n
       return res.status(400).json({ msg: 'Invalid room ID' });
     }
     
-    const { page = 1, limit = 50 } = req.query;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
     
     // Verify user is participant in this chat room
     const chatRoom = await ChatRoom.findById(req.params.roomId);
@@ -47,7 +48,7 @@ router.get('/rooms/:roomId/messages', auth, validateObjectId, async (req, res, n
       chatRoom: req.params.roomId
     }).populate('sender', 'username')
       .sort({ createdAt: -1 })
-      .limit(limit * 1)
+      .limit(limit)
       .skip((page - 1) * limit);
 
     // Mark messages as read
