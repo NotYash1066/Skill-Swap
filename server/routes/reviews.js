@@ -24,7 +24,10 @@ router.post('/', auth, apiLimiter, validateObjectId, async (req, res, next) => {
     const match = await Match.findOne({
       _id: matchId,
       status: 'accepted',
-      $or: [{ requester: req.user.id }, { recipient: req.user.id }]
+      $or: [
+        { requester: mongoose.Types.ObjectId(req.user.id) },
+        { recipient: mongoose.Types.ObjectId(req.user.id) }
+      ]
     });
     
     if (!match) return res.status(404).json({ msg: 'Match not found or not accepted' });
@@ -57,8 +60,9 @@ router.get('/user/:userId', auth, validateObjectId, async (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
       return res.status(400).json({ msg: 'Invalid user ID' });
     }
-    const reviews = await Review.find({ reviewee: req.params.userId })
-      .populate('reviewer', 'username avatar')
+    const reviews = await Review.find({ 
+      reviewee: mongoose.Types.ObjectId(req.params.userId) 
+    }).populate('reviewer', 'username avatar')
       .sort({ createdAt: -1 })
       .limit(20);
     res.json(reviews);

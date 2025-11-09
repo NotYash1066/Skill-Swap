@@ -35,18 +35,21 @@ router.get('/rooms/:roomId/messages', auth, validateObjectId, async (req, res, n
       return res.status(400).json({ msg: 'Invalid room ID' });
     }
     
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
     
     // Verify user is participant in this chat room
-    const chatRoom = await ChatRoom.findById(req.params.roomId);
-    const isParticipant = chatRoom && chatRoom.participants.some(p => p.toString() === req.user.id);
-    if (!isParticipant) {
+    const chatRoom = await ChatRoom.findOne({
+      _id: req.params.roomId,
+      participants: req.user.id
+    });
+    
+    if (!chatRoom) {
       return res.status(403).json({ msg: 'Access denied' });
     }
 
     const messages = await Message.find({
-      chatRoom: req.params.roomId
+      chatRoom: chatRoom._id
     }).populate('sender', 'username')
       .sort({ createdAt: -1 })
       .limit(limit)
@@ -87,14 +90,17 @@ router.post('/rooms/:roomId/messages', auth, validateObjectId, async (req, res, 
     }
     
     // Verify user is participant in this chat room
-    const chatRoom = await ChatRoom.findById(req.params.roomId);
-    const isParticipant = chatRoom && chatRoom.participants.some(p => p.toString() === req.user.id);
-    if (!isParticipant) {
+    const chatRoom = await ChatRoom.findOne({
+      _id: req.params.roomId,
+      participants: req.user.id
+    });
+    
+    if (!chatRoom) {
       return res.status(403).json({ msg: 'Access denied' });
     }
 
     const message = new Message({
-      chatRoom: req.params.roomId,
+      chatRoom: chatRoom._id,
       sender: req.user.id,
       content
     });
@@ -150,9 +156,12 @@ router.put('/rooms/:roomId/read', auth, validateObjectId, async (req, res, next)
     }
 
     // Verify user is participant in this room
-    const chatRoom = await ChatRoom.findById(roomId);
-    const isParticipant = chatRoom && chatRoom.participants.some(p => p.toString() === req.user.id);
-    if (!isParticipant) {
+    const chatRoom = await ChatRoom.findOne({
+      _id: roomId,
+      participants: req.user.id
+    });
+    
+    if (!chatRoom) {
       return res.status(403).json({ msg: 'Access denied' });
     }
 

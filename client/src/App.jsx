@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { VideoCallProvider } from "./contexts/VideoCallContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 import GlobalVideoCall from "./components/video/GlobalVideoCall";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -28,9 +29,10 @@ function App() {
   }
 
   return (
-    <ThemeProvider>
-      <VideoCallProvider>
-        <Router>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <VideoCallProvider>
+          <Router>
           <div className="App">
             {/* Global video call overlay mounted at app level */}
             <GlobalVideoCall />
@@ -61,9 +63,10 @@ function App() {
               />
             </Routes>
           </div>
-        </Router>
-      </VideoCallProvider>
-    </ThemeProvider>
+          </Router>
+        </VideoCallProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

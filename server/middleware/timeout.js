@@ -1,18 +1,16 @@
 const timeout = (seconds = 30) => {
   return (req, res, next) => {
-    req.setTimeout(seconds * 1000, () => {
-      res.status(408).json({
-        success: false,
-        errors: ['Request timeout']
-      });
-    });
+    const timeoutId = setTimeout(() => {
+      if (!res.headersSent) {
+        res.status(408).json({
+          success: false,
+          errors: ['Request timeout']
+        });
+      }
+    }, seconds * 1000);
     
-    res.setTimeout(seconds * 1000, () => {
-      res.status(408).json({
-        success: false,
-        errors: ['Response timeout']
-      });
-    });
+    res.on('finish', () => clearTimeout(timeoutId));
+    res.on('close', () => clearTimeout(timeoutId));
     
     next();
   };

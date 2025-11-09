@@ -26,10 +26,11 @@ router.get('/potential', auth, async (req, res, next) => {
     const userOffered = Array.isArray(currentUser?.skillsOffered) ? currentUser.skillsOffered : [];
 
     // Exclude users you already have any match with (pending/accepted/rejected)
+    const userId = mongoose.Types.ObjectId(req.user.id);
     const existingMatches = await Match.find({
       $or: [
-        { requester: req.user.id },
-        { recipient: req.user.id }
+        { requester: userId },
+        { recipient: userId }
       ]
     }).select('requester recipient');
 
