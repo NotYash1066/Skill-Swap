@@ -6,15 +6,13 @@ const jwt = require("jsonwebtoken");
 const http = require("http");
 const socketIo = require("socket.io");
 const logger = require('./utils/logger');
+const validateEnv = require('./utils/envValidator');
 const ChatRoom = require('./models/ChatRoom');
 const Message = require('./models/Message');
 const { createNotification } = require('./utils/notificationHelper');
 
-// Fail fast if critical env vars are missing
-if (!process.env.JWT_SECRET) {
-  logger.error("FATAL: JWT_SECRET is not defined. Please set it in your environment or .env file.");
-  process.exit(1);
-}
+// Validate environment variables
+validateEnv();
 
 const helmet = require('helmet');
 const { sanitizeInput } = require('./middleware/inputValidation');

@@ -7,6 +7,7 @@ const ChatRoom = require('../models/ChatRoom');
 const Message = require('../models/Message');
 const Match = require('../models/Match');
 const { isValidObjectId } = require('../utils/validators');
+const { LIMITS } = require('../constants');
 
 // @route   GET /api/chat/rooms
 // @desc    Get user's chat rooms
@@ -81,8 +82,8 @@ router.post('/rooms/:roomId/messages', auth, validateObjectId, async (req, res, 
       return res.status(400).json({ msg: 'Message content is required' });
     }
     
-    if (content.length > 5000) {
-      return res.status(400).json({ msg: 'Message too long (max 5000 characters)' });
+    if (content.length > LIMITS.MAX_MESSAGE_LENGTH) {
+      return res.status(400).json({ msg: `Message too long (max ${LIMITS.MAX_MESSAGE_LENGTH} characters)` });
     }
     
     // Verify user is participant in this chat room

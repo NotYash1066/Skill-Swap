@@ -8,6 +8,7 @@ const Match = require('../models/Match');
 const ChatRoom = require('../models/ChatRoom');
 const { createNotification } = require('../utils/notificationHelper');
 const { sanitizeRegexInput } = require('../utils/validators');
+const { MATCH_STATUS, LIMITS } = require('../constants');
 
 // @route   GET /api/matches/potential
 // @desc    Get potential matches based on complementary skills
@@ -137,8 +138,8 @@ router.post('/request', auth, validateObjectId, async (req, res, next) => {
     if (!recipientId || !mongoose.Types.ObjectId.isValid(recipientId)) {
       return res.status(400).json({ msg: 'Invalid recipientId' });
     }
-    if (!message || !message.trim() || message.trim().length > 500) {
-      return res.status(400).json({ msg: 'Message is required and must be <= 500 characters' });
+    if (!message || !message.trim() || message.trim().length > LIMITS.MAX_MATCH_MESSAGE_LENGTH) {
+      return res.status(400).json({ msg: `Message is required and must be <= ${LIMITS.MAX_MATCH_MESSAGE_LENGTH} characters` });
     }
     if (!Array.isArray(matchedSkills) || matchedSkills.length === 0) {
       return res.status(400).json({ msg: 'matchedSkills must be a non-empty array' });

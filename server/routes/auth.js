@@ -7,6 +7,7 @@ const User = require("../models/User");
 const auth = require("../middleware/auth");
 const { authLimiter, skillsLimiter } = require("../middleware/rateLimit");
 const { validateObjectId } = require("../middleware/inputValidation");
+const { LIMITS } = require("../constants");
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
@@ -206,8 +207,8 @@ router.put("/skills", auth, skillsLimiter, async (req, res, next) => {
 			return skills
 				.filter(skill => typeof skill === 'string' && skill.trim().length > 0)
 				.map(skill => skill.trim().toLowerCase())
-				.filter(skill => skill.length <= 50) // Max skill length
-				.slice(0, 20); // Max 20 skills per category
+				.filter(skill => skill.length <= LIMITS.MAX_SKILL_LENGTH)
+				.slice(0, LIMITS.MAX_SKILLS);
 		};
 
 		const sanitizedOffered = sanitizeSkills(skillsOffered);
@@ -244,8 +245,8 @@ router.put("/profile", auth, async (req, res, next) => {
 		const updates = {};
 		
 		if (bio !== undefined) {
-			if (typeof bio !== 'string' || bio.length > 500) {
-				return res.status(400).json({ errors: ["Bio must be a string, max 500 chars"] });
+			if (typeof bio !== 'string' || bio.length > LIMITS.MAX_BIO_LENGTH) {
+				return res.status(400).json({ errors: [`Bio must be a string, max ${LIMITS.MAX_BIO_LENGTH} chars`] });
 			}
 			updates.bio = bio.trim();
 		}
