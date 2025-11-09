@@ -1,9 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import 'fabric';
+import { fabric } from 'fabric';
 import './Whiteboard.css';
-
-// Note: Fabric v6 exports via ESM as 'fabric', but older versions expose Fabric via window.fabric.
-// We'll safely access window.fabric for compatibility.
 
 const Whiteboard = ({ socket, roomId, onClose }) => {
   const canvasRef = useRef(null);
@@ -19,14 +16,14 @@ const Whiteboard = ({ socket, roomId, onClose }) => {
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    const canvas = new window.fabric.Canvas(canvasRef.current, {
+    const canvas = new fabric.Canvas(canvasRef.current, {
       isDrawingMode: true,
       backgroundColor: '#ffffff',
       selection: false,
     });
     fabricCanvasRef.current = canvas;
 
-    canvas.freeDrawingBrush = new window.fabric.PencilBrush(canvas);
+    canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
     canvas.freeDrawingBrush.width = size;
     canvas.freeDrawingBrush.color = color;
 
@@ -120,13 +117,13 @@ const Whiteboard = ({ socket, roomId, onClose }) => {
 
     if (tool === 'pen') {
       canvas.isDrawingMode = true;
-      canvas.freeDrawingBrush = new window.fabric.PencilBrush(canvas);
+      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
       canvas.freeDrawingBrush.width = size;
       canvas.freeDrawingBrush.color = color;
     } else if (tool === 'eraser') {
       canvas.isDrawingMode = true;
       // Eraser effect: draw with white over the canvas
-      canvas.freeDrawingBrush = new window.fabric.PencilBrush(canvas);
+      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
       canvas.freeDrawingBrush.width = size + 4;
       canvas.freeDrawingBrush.color = '#ffffff';
     }
