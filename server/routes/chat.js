@@ -19,8 +19,8 @@ router.get('/rooms', auth, async (req, res) => {
 
     res.json(chatRooms);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error fetching chat rooms:', err.message);
+    return next(err);
   }
 });
 
@@ -56,8 +56,8 @@ router.get('/rooms/:roomId/messages', auth, async (req, res) => {
 
     res.json(messages.reverse()); // Return in chronological order
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error fetching messages:', err.message);
+    return next(err);
   }
 });
 
@@ -98,8 +98,8 @@ router.post('/rooms/:roomId/messages', auth, async (req, res) => {
 
     res.json(message);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error sending message:', err.message);
+    return next(err);
   }
 });
 
@@ -124,8 +124,8 @@ router.get('/unread', auth, async (req, res) => {
 
     res.json({ unreadCount });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error fetching unread count:', err.message);
+    return next(err);
   }
 });
 
@@ -162,8 +162,8 @@ router.put('/rooms/:roomId/read', auth, async (req, res) => {
 
     res.json({ msg: 'Messages marked as read' });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error marking messages as read:', err.message);
+    return next(err);
   }
 });
 

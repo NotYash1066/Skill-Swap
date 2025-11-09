@@ -215,11 +215,8 @@ router.put("/skills", auth, skillsLimiter, async (req, res) => {
 
 		res.json(user);
 	} catch (err) {
-		console.error(err.message);
-		res.status(500).json({
-			success: false,
-			errors: ["Failed to update skills. Please try again."]
-		});
+		console.error('Error updating skills:', err.message);
+		return next(err);
 	}
 });
 
@@ -250,8 +247,8 @@ router.put("/profile", auth, async (req, res) => {
 
 		res.json(user);
 	} catch (err) {
-		console.error(err.message);
-		res.status(500).json({ errors: ["Failed to update profile"] });
+		console.error('Error updating profile:', err.message);
+		return next(err);
 	}
 });
 

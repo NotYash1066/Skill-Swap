@@ -1,5 +1,7 @@
+const logger = require('../utils/logger');
+
 const errorHandler = (err, req, res, next) => {
-	console.error(`${req.method} ${req.url} - ${err.stack}`);
+	logger.error(`${req.method} ${req.url}`, err);
 
 	// Mongoose validation error
 	if (err.name === "ValidationError") {
@@ -76,10 +78,10 @@ const errorHandler = (err, req, res, next) => {
 
 	// Default server error
 	const isDevelopment = process.env.NODE_ENV === 'development';
-	res.status(err.status || 500).json({
+	const statusCode = err.status || err.statusCode || 500;
+	res.status(statusCode).json({
 		success: false,
-		errors: [isDevelopment ? err.message : "Internal server error"],
-		...(isDevelopment && { stack: err.stack })
+		errors: [isDevelopment ? err.message : "Internal server error"]
 	});
 };
 

@@ -5,10 +5,11 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const http = require("http");
 const socketIo = require("socket.io");
+const logger = require('./utils/logger');
 
 // Fail fast if critical env vars are missing
 if (!process.env.JWT_SECRET) {
-  console.error("FATAL: JWT_SECRET is not defined. Please set it in your environment or .env file.");
+  logger.error("FATAL: JWT_SECRET is not defined. Please set it in your environment or .env file.");
   process.exit(1);
 }
 
@@ -40,21 +41,24 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 
 // Debug middleware
-app.use((req, res, next) => {
-	console.log(`${req.method} ${req.url}`);
-	next();
-});
+if (process.env.NODE_ENV === 'development') {
+  app.use((req, res, next) => {
+    logger.info(`${req.method} ${req.url}`);
+    next();
+  });
+}
 
 // Root route handler
 app.get("/", (req, res) => {
 	res.json({ message: "Welcome to SkillSwap API" });
 });
-console.log("MONGO_URI:", process.env.MONGO_URI);
-
 // DB Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/SkillSwapDB')
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .then(() => logger.info('MongoDB connected successfully'))
+  .catch(err => {
+    logger.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 // Import routes
 const authRoutes = require("./routes/auth");
@@ -96,7 +100,7 @@ const whiteboardHandlerInstance = whiteboardHandler(io);
 
 // Socket.io connection handling
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
+  logger.info(`User connected: ${socket.id}`);
 
   // Join user to their chat rooms
   socket.on('join-rooms', async (userId) => {
@@ -112,7 +116,7 @@ io.on('connection', (socket) => {
         socket.join(room._id.toString());
       });
     } catch (err) {
-      console.error('Error joining rooms:', err);
+      logger.error('Error joining rooms:', err);
     }
   });
 
@@ -158,7 +162,7 @@ io.on('connection', (socket) => {
         io.to(`notifications-${recipient._id}`).emit('new-notification', notification);
       }
     } catch (err) {
-      console.error('Error sending message:', err);
+      logger.error('Error sending message:', err);
     }
   });
 
@@ -182,9 +186,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+    logger.info(`User disconnected: ${socket.id}`);
   });
 });
 
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
