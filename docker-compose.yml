@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: skillswap-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: SkillSwapDB
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - skillswap-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: skillswap-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - skillswap-network
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: skillswap-server
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/SkillSwapDB
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - skillswap-network
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: skillswap-client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - skillswap-network
+
+volumes:
+  mongo-data:
+
+networks:
+  skillswap-network:
+    driver: bridge
