@@ -6,6 +6,9 @@ const jwt = require("jsonwebtoken");
 const http = require("http");
 const socketIo = require("socket.io");
 const logger = require('./utils/logger');
+const ChatRoom = require('./models/ChatRoom');
+const Message = require('./models/Message');
+const { createNotification } = require('./utils/notificationHelper');
 
 // Fail fast if critical env vars are missing
 if (!process.env.JWT_SECRET) {
@@ -106,7 +109,6 @@ io.on('connection', (socket) => {
   socket.on('join-rooms', async (userId) => {
     try {
       if (!mongoose.Types.ObjectId.isValid(userId)) return;
-      const ChatRoom = require('./models/ChatRoom');
       const userRooms = await ChatRoom.find({
         participants: userId,
         isActive: true
@@ -126,9 +128,6 @@ io.on('connection', (socket) => {
       const { roomId, content, senderId } = data;
       if (!mongoose.Types.ObjectId.isValid(roomId) || !mongoose.Types.ObjectId.isValid(senderId)) return;
       if (!content || typeof content !== 'string' || content.length > 5000) return;
-      const Message = require('./models/Message');
-      const ChatRoom = require('./models/ChatRoom');
-      const { createNotification } = require('./utils/notificationHelper');
 
       // Create and save message
       const message = new Message({

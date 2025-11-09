@@ -61,10 +61,10 @@ UserSchema.index({ 'location.city': 1 });
 UserSchema.index({ 'location.country': 1 });
 UserSchema.index({ rating: -1 });
 
-// Virtual for user's full skill set (safe for undefined/null arrays)
+// Virtual for user's full skill set
 UserSchema.virtual('allSkills').get(function() {
-	const offered = Array.isArray(this.skillsOffered) ? this.skillsOffered : [];
-	const sought = Array.isArray(this.skillsSought) ? this.skillsSought : [];
+	const offered = this.skillsOffered || [];
+	const sought = this.skillsSought || [];
 	return [...offered, ...sought];
 });
 

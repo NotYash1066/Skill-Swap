@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const ChatRoom = require('../models/ChatRoom');
 const Message = require('../models/Message');
 const Match = require('../models/Match');
+const { isValidObjectId } = require('../utils/validators');
 
 // @route   GET /api/chat/rooms
 // @desc    Get user's chat rooms
@@ -26,8 +28,12 @@ router.get('/rooms', auth, async (req, res) => {
 
 // @route   GET /api/chat/rooms/:roomId/messages
 // @desc    Get messages for a chat room
-router.get('/rooms/:roomId/messages', auth, async (req, res) => {
+router.get('/rooms/:roomId/messages', auth, async (req, res, next) => {
   try {
+    if (!isValidObjectId(req.params.roomId)) {
+      return res.status(400).json({ msg: 'Invalid room ID' });
+    }
+    
     const { page = 1, limit = 50 } = req.query;
     
     // Verify user is participant in this chat room
@@ -63,8 +69,12 @@ router.get('/rooms/:roomId/messages', auth, async (req, res) => {
 
 // @route   POST /api/chat/rooms/:roomId/messages
 // @desc    Send a message
-router.post('/rooms/:roomId/messages', auth, async (req, res) => {
+router.post('/rooms/:roomId/messages', auth, async (req, res, next) => {
   try {
+    if (!isValidObjectId(req.params.roomId)) {
+      return res.status(400).json({ msg: 'Invalid room ID' });
+    }
+    
     const { content } = req.body;
     
     if (!content || typeof content !== 'string' || content.trim().length === 0) {
@@ -106,7 +116,7 @@ router.post('/rooms/:roomId/messages', auth, async (req, res) => {
 // @route   GET /api/chat/unread
 // @desc    Get unread message count for the authenticated user
 // @access  Private
-router.get('/unread', auth, async (req, res) => {
+router.get('/unread', auth, async (req, res, next) => {
   try {
     // Get all chat rooms for the user
     const chatRooms = await ChatRoom.find({
@@ -132,9 +142,13 @@ router.get('/unread', auth, async (req, res) => {
 // @route   PUT /api/chat/rooms/:roomId/read
 // @desc    Mark messages as read in a chat room
 // @access  Private
-router.put('/rooms/:roomId/read', auth, async (req, res) => {
+router.put('/rooms/:roomId/read', auth, async (req, res, next) => {
   try {
     const { roomId } = req.params;
+    
+    if (!isValidObjectId(roomId)) {
+      return res.status(400).json({ msg: 'Invalid room ID' });
+    }
 
     // Verify user is participant in this room
     const chatRoom = await ChatRoom.findById(roomId);

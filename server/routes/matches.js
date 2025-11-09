@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const User = require('../models/User');
 const Match = require('../models/Match');
 const ChatRoom = require('../models/ChatRoom');
-const mongoose = require('mongoose');
+const { createNotification } = require('../utils/notificationHelper');
+const { sanitizeRegexInput } = require('../utils/validators');
 
 // @route   GET /api/matches/potential
 // @desc    Get potential matches based on complementary skills
@@ -14,9 +16,8 @@ router.get('/potential', auth, async (req, res, next) => {
     const { search, skill, minCompatibility = 0, city, country, availability, proficiency, minRating } = req.query;
     
     // Sanitize inputs
-    const sanitizeString = (str) => str ? String(str).trim().replace(/[^a-zA-Z0-9\s\-]/g, '') : '';
-    const sanitizedCity = sanitizeString(city);
-    const sanitizedCountry = sanitizeString(country);
+    const sanitizedCity = sanitizeRegexInput(city);
+    const sanitizedCountry = sanitizeRegexInput(country);
     const currentUser = await User.findById(req.user.id);
 
     const userSought = Array.isArray(currentUser?.skillsSought) ? currentUser.skillsSought : [];
@@ -57,13 +58,13 @@ router.get('/potential', auth, async (req, res, next) => {
 
     // Add username search filter if provided
     if (search && search.trim()) {
-      const sanitizedSearch = sanitizeString(search);
+      const sanitizedSearch = sanitizeRegexInput(search);
       matchQuery.username = { $regex: sanitizedSearch, $options: 'i' };
     }
 
     // Add specific skill filter if provided
     if (skill && skill.trim()) {
-      const sanitizedSkill = sanitizeString(skill);
+      const sanitizedSkill = sanitizeRegexInput(skill);
       matchQuery.$or = [
         { skillsOffered: { $regex: sanitizedSkill, $options: 'i' } },
         { skillsSought: { $regex: sanitizedSkill, $options: 'i' } }
@@ -181,7 +182,6 @@ router.post('/request', auth, async (req, res, next) => {
     await newMatch.populate('requester recipient', 'username email');
 
     // Create notification for recipient
-    const { createNotification } = require('../utils/notificationHelper');
     const notification = await createNotification(
       recipientId,
       'match_request',
@@ -269,7 +269,6 @@ router.put('/:id/respond', auth, async (req, res, next) => {
     await match.save();
 
     // Create notification for requester
-    const { createNotification } = require('../utils/notificationHelper');
     await match.populate('requester recipient', 'username');
     if (status === 'accepted') {
       const notification = await createNotification(
@@ -285,7 +284,6 @@ router.put('/:id/respond', auth, async (req, res, next) => {
 
     // If accepted, ensure a chat room exists (idempotent)
     if (status === 'accepted') {
-      const ChatRoom = require('../models/ChatRoom');
 
       // Try to find an existing room by match or by participants (order-independent)
       let chatRoom = await ChatRoom.findOne({

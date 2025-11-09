@@ -42,5 +42,8 @@ const MatchSchema = new mongoose.Schema({
 
 // Prevent duplicate match requests
 MatchSchema.index({ requester: 1, recipient: 1 }, { unique: true });
+MatchSchema.index({ recipient: 1, status: 1 });
+MatchSchema.index({ requester: 1, status: 1 });
+MatchSchema.index({ status: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Match', MatchSchema);
