@@ -87,6 +87,11 @@ const matchRoutes = require("./routes/matches");
 const chatRoutes = require("./routes/chat");
 const notificationRoutes = require("./routes/notifications");
 const reviewRoutes = require("./routes/reviews");
+const authExtensionsRoutes = require("./routes/authExtensions");
+const sessionsRoutes = require("./routes/sessions");
+const badgesRoutes = require("./routes/badges");
+const progressRoutes = require("./routes/progress");
+const matchesEnhancedRoutes = require("./routes/matchesEnhanced");
 
 // Import video handler
 const videoHandler = require("./socketHandlers/videoHandler");
@@ -104,6 +109,11 @@ app.use("/api/matches", matchRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/auth", authExtensionsRoutes);
+app.use("/api/sessions", sessionsRoutes);
+app.use("/api/badges", badgesRoutes);
+app.use("/api/progress", progressRoutes);
+app.use("/api/matches", matchesEnhancedRoutes);
 
 // Debug route to verify server is working
 app.get("/api/test", (req, res) => {
