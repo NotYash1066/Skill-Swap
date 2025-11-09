@@ -17,6 +17,8 @@ if (!process.env.JWT_SECRET) {
 }
 
 const helmet = require('helmet');
+const { sanitizeInput } = require('./middleware/inputValidation');
+const validateContentType = require('./middleware/contentType');
 
 const app = express();
 const server = http.createServer(app);
@@ -42,6 +44,8 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
+app.use(validateContentType);
+app.use(sanitizeInput);
 
 // Debug middleware
 if (process.env.NODE_ENV === 'development') {

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/rateLimit');
+const { validateObjectId } = require('../middleware/inputValidation');
 const Notification = require('../models/Notification');
 
 // Get user notifications
@@ -17,7 +18,7 @@ router.get('/', auth, async (req, res, next) => {
 });
 
 // Mark notification as read
-router.put('/:id/read', auth, apiLimiter, async (req, res, next) => {
+router.put('/:id/read', auth, apiLimiter, validateObjectId, async (req, res, next) => {
   try {
     const notification = await Notification.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id },

@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const auth = require("../middleware/auth");
 const { authLimiter, skillsLimiter } = require("../middleware/rateLimit");
+const { validateObjectId } = require("../middleware/inputValidation");
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
@@ -15,10 +16,11 @@ router.post(
 	[
 		check("username", "Username is required").not().isEmpty(),
 		check("email", "Please include a valid email").isEmail(),
-		check(
-			"password",
-			"Please enter a password with 6 or more characters"
-		).isLength({ min: 6 }),
+		check("password")
+			.isLength({ min: 8 })
+			.withMessage("Password must be at least 8 characters")
+			.matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+			.withMessage("Password must contain uppercase, lowercase, and number"),
 	],
 	async (req, res, next) => {
 		// Check for validation errors
@@ -252,7 +254,7 @@ router.put("/profile", auth, async (req, res, next) => {
 
 // @route   GET /api/auth/user/:id
 // @desc    Get user profile by ID
-router.get("/user/:id", async (req, res, next) => {
+router.get("/user/:id", validateObjectId, async (req, res, next) => {
 	try {
 		const user = await User.findById(req.params.id).select("-password");
 		if (!user) return res.status(404).json({ msg: 'User not found' });

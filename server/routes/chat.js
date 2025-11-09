@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
+const { validateObjectId } = require('../middleware/inputValidation');
 const ChatRoom = require('../models/ChatRoom');
 const Message = require('../models/Message');
 const Match = require('../models/Match');
@@ -27,7 +28,7 @@ router.get('/rooms', auth, async (req, res, next) => {
 
 // @route   GET /api/chat/rooms/:roomId/messages
 // @desc    Get messages for a chat room
-router.get('/rooms/:roomId/messages', auth, async (req, res, next) => {
+router.get('/rooms/:roomId/messages', auth, validateObjectId, async (req, res, next) => {
   try {
     if (!isValidObjectId(req.params.roomId)) {
       return res.status(400).json({ msg: 'Invalid room ID' });
@@ -67,7 +68,7 @@ router.get('/rooms/:roomId/messages', auth, async (req, res, next) => {
 
 // @route   POST /api/chat/rooms/:roomId/messages
 // @desc    Send a message
-router.post('/rooms/:roomId/messages', auth, async (req, res, next) => {
+router.post('/rooms/:roomId/messages', auth, validateObjectId, async (req, res, next) => {
   try {
     if (!isValidObjectId(req.params.roomId)) {
       return res.status(400).json({ msg: 'Invalid room ID' });
@@ -138,7 +139,7 @@ router.get('/unread', auth, async (req, res, next) => {
 // @route   PUT /api/chat/rooms/:roomId/read
 // @desc    Mark messages as read in a chat room
 // @access  Private
-router.put('/rooms/:roomId/read', auth, async (req, res, next) => {
+router.put('/rooms/:roomId/read', auth, validateObjectId, async (req, res, next) => {
   try {
     const { roomId } = req.params;
     

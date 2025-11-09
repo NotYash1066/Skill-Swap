@@ -3,12 +3,13 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const { apiLimiter } = require('../middleware/rateLimit');
+const { validateObjectId } = require('../middleware/inputValidation');
 const Review = require('../models/Review');
 const User = require('../models/User');
 const Match = require('../models/Match');
 
 // Create review
-router.post('/', auth, apiLimiter, async (req, res, next) => {
+router.post('/', auth, apiLimiter, validateObjectId, async (req, res, next) => {
   try {
     const { revieweeId, matchId, rating, comment } = req.body;
     
@@ -51,7 +52,7 @@ router.post('/', auth, apiLimiter, async (req, res, next) => {
 });
 
 // Get user reviews
-router.get('/user/:userId', auth, async (req, res, next) => {
+router.get('/user/:userId', auth, validateObjectId, async (req, res, next) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
       return res.status(400).json({ msg: 'Invalid user ID' });

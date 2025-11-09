@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
+const { validateObjectId } = require('../middleware/inputValidation');
 const User = require('../models/User');
 const Match = require('../models/Match');
 const ChatRoom = require('../models/ChatRoom');
@@ -128,7 +129,7 @@ router.get('/potential', auth, async (req, res, next) => {
 
 // @route   POST /api/matches/request
 // @desc    Send a match request
-router.post('/request', auth, async (req, res, next) => {
+router.post('/request', auth, validateObjectId, async (req, res, next) => {
   try {
     const { recipientId, message, matchedSkills } = req.body;
 
@@ -235,7 +236,7 @@ router.get('/sent', auth, async (req, res, next) => {
 
 // @route   PUT /api/matches/:id/respond
 // @desc    Respond to a match request (accept/reject)
-router.put('/:id/respond', auth, async (req, res, next) => {
+router.put('/:id/respond', auth, validateObjectId, async (req, res, next) => {
   try {
     const { status } = req.body; // 'accepted' or 'rejected'
 

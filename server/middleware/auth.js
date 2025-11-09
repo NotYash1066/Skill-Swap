@@ -10,13 +10,19 @@ const auth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Validate decoded user ID
+    if (!decoded.user?.id || typeof decoded.user.id !== 'string') {
+      return res.status(401).json({ success: false, errors: ['Invalid token payload'] });
+    }
+    
     const user = await User.findById(decoded.user.id).select('-password');
     
     if (!user) {
       return res.status(401).json({ success: false, errors: ['Token is not valid'] });
     }
 
-    req.user = user;
+    req.user = { id: user._id.toString(), ...user.toObject() };
     next();
   } catch (err) {
     if (err.name === 'TokenExpiredError') {
