@@ -8,6 +8,7 @@ const auth = require("../middleware/auth");
 const { authLimiter, skillsLimiter } = require("../middleware/rateLimit");
 const { validateObjectId } = require("../middleware/inputValidation");
 const { LIMITS } = require("../constants");
+const upload = require("../middleware/upload");
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
@@ -232,6 +233,28 @@ router.put("/skills", auth, skillsLimiter, async (req, res, next) => {
 		).select("-password");
 
 		res.json(user);
+	} catch (err) {
+		return next(err);
+	}
+});
+
+// @route   POST /api/auth/avatar
+// @desc    Upload avatar
+router.post("/avatar", auth, upload.single('avatar'), async (req, res, next) => {
+	try {
+		if (!req.file) {
+			return res.status(400).json({ errors: ['No file uploaded'] });
+		}
+		
+		const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+		
+		const user = await User.findByIdAndUpdate(
+			req.user.id,
+			{ avatar: avatarUrl },
+			{ new: true }
+		).select("-password");
+		
+		res.json({ avatar: avatarUrl, user });
 	} catch (err) {
 		return next(err);
 	}

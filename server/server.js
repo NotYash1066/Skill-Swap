@@ -61,6 +61,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
+app.use('/uploads', express.static('uploads'));
 app.use(timeout(30));
 app.use(requestLogger);
 app.use(validateContentType);
