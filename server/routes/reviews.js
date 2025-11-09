@@ -1,14 +1,20 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
+const { apiLimiter } = require('../middleware/rateLimit');
 const Review = require('../models/Review');
 const User = require('../models/User');
 const Match = require('../models/Match');
 
 // Create review
-router.post('/', auth, async (req, res, next) => {
+router.post('/', auth, apiLimiter, async (req, res, next) => {
   try {
     const { revieweeId, matchId, rating, comment } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(revieweeId) || !mongoose.Types.ObjectId.isValid(matchId)) {
+      return res.status(400).json({ msg: 'Invalid ID format' });
+    }
     
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ msg: 'Rating must be between 1 and 5' });
@@ -45,8 +51,11 @@ router.post('/', auth, async (req, res, next) => {
 });
 
 // Get user reviews
-router.get('/user/:userId', async (req, res, next) => {
+router.get('/user/:userId', auth, async (req, res, next) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
+      return res.status(400).json({ msg: 'Invalid user ID' });
+    }
     const reviews = await Review.find({ reviewee: req.params.userId })
       .populate('reviewer', 'username avatar')
       .sort({ createdAt: -1 })

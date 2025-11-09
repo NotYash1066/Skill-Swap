@@ -12,6 +12,11 @@ const mongoose = require('mongoose');
 router.get('/potential', auth, async (req, res, next) => {
   try {
     const { search, skill, minCompatibility = 0, city, country, availability, proficiency, minRating } = req.query;
+    
+    // Sanitize inputs
+    const sanitizeString = (str) => str ? String(str).trim().replace(/[^a-zA-Z0-9\s\-]/g, '') : '';
+    const sanitizedCity = sanitizeString(city);
+    const sanitizedCountry = sanitizeString(country);
     const currentUser = await User.findById(req.user.id);
 
     const userSought = Array.isArray(currentUser?.skillsSought) ? currentUser.skillsSought : [];
@@ -45,21 +50,23 @@ router.get('/potential', auth, async (req, res, next) => {
     };
 
     // Advanced filters
-    if (city) matchQuery['location.city'] = { $regex: city.trim(), $options: 'i' };
-    if (country) matchQuery['location.country'] = { $regex: country.trim(), $options: 'i' };
+    if (sanitizedCity) matchQuery['location.city'] = { $regex: sanitizedCity, $options: 'i' };
+    if (sanitizedCountry) matchQuery['location.country'] = { $regex: sanitizedCountry, $options: 'i' };
     if (availability) matchQuery.availability = { $in: Array.isArray(availability) ? availability : [availability] };
     if (minRating) matchQuery.rating = { $gte: parseFloat(minRating) };
 
     // Add username search filter if provided
     if (search && search.trim()) {
-      matchQuery.username = { $regex: search.trim(), $options: 'i' };
+      const sanitizedSearch = sanitizeString(search);
+      matchQuery.username = { $regex: sanitizedSearch, $options: 'i' };
     }
 
     // Add specific skill filter if provided
     if (skill && skill.trim()) {
+      const sanitizedSkill = sanitizeString(skill);
       matchQuery.$or = [
-        { skillsOffered: { $regex: skill.trim(), $options: 'i' } },
-        { skillsSought: { $regex: skill.trim(), $options: 'i' } }
+        { skillsOffered: { $regex: sanitizedSkill, $options: 'i' } },
+        { skillsSought: { $regex: sanitizedSkill, $options: 'i' } }
       ];
     }
     

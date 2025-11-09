@@ -12,18 +12,32 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+const helmet = require('helmet');
+
 const app = express();
 const server = http.createServer(app);
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable for development, enable in production
+  crossOriginEmbedderPolicy: false
+}));
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+const corsOptions = {
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' }));
 
 // Debug middleware
 app.use((req, res, next) => {
@@ -87,6 +101,7 @@ io.on('connection', (socket) => {
   // Join user to their chat rooms
   socket.on('join-rooms', async (userId) => {
     try {
+      if (!mongoose.Types.ObjectId.isValid(userId)) return;
       const ChatRoom = require('./models/ChatRoom');
       const userRooms = await ChatRoom.find({
         participants: userId,
@@ -105,6 +120,8 @@ io.on('connection', (socket) => {
   socket.on('send-message', async (data) => {
     try {
       const { roomId, content, senderId } = data;
+      if (!mongoose.Types.ObjectId.isValid(roomId) || !mongoose.Types.ObjectId.isValid(senderId)) return;
+      if (!content || typeof content !== 'string' || content.length > 5000) return;
       const Message = require('./models/Message');
       const ChatRoom = require('./models/ChatRoom');
       const { createNotification } = require('./utils/notificationHelper');

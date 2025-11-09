@@ -8,6 +8,7 @@ const videoHandler = (io) => {
 
     // Store user socket mapping
     socket.on('register-user', (userId) => {
+      if (!userId || typeof userId !== 'string') return;
       userSockets.set(userId, socket.id);
       socket.userId = userId;
       console.log(`User ${userId} registered with socket ${socket.id}`);
@@ -17,6 +18,10 @@ const videoHandler = (io) => {
     socket.on('initiate-video-call', async (data) => {
       try {
         const { targetUserId, callerId, callerName } = data;
+        if (!targetUserId || !callerId || !callerName || typeof callerName !== 'string') {
+          socket.emit('call-error', { message: 'Invalid call data' });
+          return;
+        }
         const targetSocketId = userSockets.get(targetUserId);
         
         if (targetSocketId) {
@@ -47,6 +52,7 @@ const videoHandler = (io) => {
     socket.on('accept-video-call', (data) => {
       try {
         const { roomId, callerId } = data;
+        if (!roomId || !callerId) return;
         const callerSocketId = userSockets.get(callerId);
         
         if (callerSocketId) {
@@ -73,6 +79,7 @@ const videoHandler = (io) => {
     socket.on('reject-video-call', (data) => {
       try {
         const { roomId, callerId, reason = 'declined' } = data;
+        if (!roomId || !callerId) return;
         const callerSocketId = userSockets.get(callerId);
         
         if (callerSocketId) {
@@ -88,6 +95,7 @@ const videoHandler = (io) => {
     socket.on('join-video-room', (data) => {
       try {
         const { roomId } = data;
+        if (!roomId || typeof roomId !== 'string') return;
         socket.join(roomId);
         
         const room = videoRooms.get(roomId);
@@ -111,6 +119,7 @@ const videoHandler = (io) => {
     // Handle WebRTC signaling
     socket.on('video-offer', (data) => {
       const { roomId, offer, targetSocketId } = data;
+      if (!roomId || !offer) return;
       console.log(`Video offer sent in room: ${roomId}`);
       
       if (targetSocketId) {
@@ -131,6 +140,7 @@ const videoHandler = (io) => {
 
     socket.on('video-answer', (data) => {
       const { roomId, answer, targetSocketId } = data;
+      if (!roomId || !answer || !targetSocketId) return;
       console.log(`Video answer sent in room: ${roomId}`);
       
       io.to(targetSocketId).emit('video-answer', {
@@ -142,6 +152,7 @@ const videoHandler = (io) => {
 
     socket.on('ice-candidate', (data) => {
       const { roomId, candidate, targetSocketId } = data;
+      if (!roomId || !candidate) return;
       
       if (targetSocketId) {
         io.to(targetSocketId).emit('ice-candidate', {

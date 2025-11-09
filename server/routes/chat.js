@@ -67,6 +67,14 @@ router.post('/rooms/:roomId/messages', auth, async (req, res) => {
   try {
     const { content } = req.body;
     
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      return res.status(400).json({ msg: 'Message content is required' });
+    }
+    
+    if (content.length > 5000) {
+      return res.status(400).json({ msg: 'Message too long (max 5000 characters)' });
+    }
+    
     // Verify user is participant in this chat room
     const chatRoom = await ChatRoom.findById(req.params.roomId);
     const isParticipant = chatRoom && chatRoom.participants.some(p => p.toString() === req.user.id);

@@ -8,6 +8,7 @@ module.exports = function whiteboardHandler(io) {
   io.on('connection', (socket) => {
     // Join a whiteboard room (typically the same as chat room ID)
     socket.on('whiteboard-join', ({ roomId }) => {
+      if (!roomId || typeof roomId !== 'string') return;
       const wbRoom = `whiteboard_${roomId}`;
       socket.join(wbRoom);
       // Send latest state to the newly joined client
@@ -19,6 +20,7 @@ module.exports = function whiteboardHandler(io) {
 
     // Receive full-canvas updates (throttled on client) and broadcast
     socket.on('whiteboard-update', ({ roomId, json }) => {
+      if (!roomId || typeof roomId !== 'string' || !json) return;
       whiteboardStates.set(roomId, { json, updatedAt: Date.now() });
       const wbRoom = `whiteboard_${roomId}`;
       socket.to(wbRoom).emit('whiteboard-sync', { roomId, json });
@@ -26,6 +28,7 @@ module.exports = function whiteboardHandler(io) {
 
     // Clear whiteboard
     socket.on('whiteboard-clear', ({ roomId }) => {
+      if (!roomId || typeof roomId !== 'string') return;
       whiteboardStates.set(roomId, { json: null, updatedAt: Date.now() });
       const wbRoom = `whiteboard_${roomId}`;
       socket.to(wbRoom).emit('whiteboard-cleared', { roomId });
