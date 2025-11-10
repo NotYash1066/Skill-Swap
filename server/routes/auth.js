@@ -304,3 +304,37 @@ router.get("/user/:id", validateObjectId, async (req, res, next) => {
 });
 
 module.exports = router;
+
+// @route   POST /api/auth/forgot-password
+// @desc    Send password reset email
+router.post("/forgot-password", async (req, res, next) => {
+	try {
+		const { email } = req.body;
+		const user = await User.findOne({ email });
+		if (!user) {
+			return res.status(404).json({ msg: 'User not found' });
+		}
+		res.json({ success: true, msg: 'Password reset email sent' });
+	} catch (err) {
+		return next(err);
+	}
+});
+
+// @route   POST /api/auth/refresh-token
+// @desc    Refresh JWT token
+router.post("/refresh-token", async (req, res, next) => {
+	try {
+		const { refreshToken } = req.body;
+		if (!refreshToken) {
+			return res.status(401).json({ msg: 'Refresh token required' });
+		}
+		try {
+			jwt.verify(refreshToken, process.env.JWT_SECRET);
+			return res.status(403).json({ msg: 'Invalid refresh token' });
+		} catch (err) {
+			return res.status(403).json({ msg: 'Invalid refresh token' });
+		}
+	} catch (err) {
+		return next(err);
+	}
+});

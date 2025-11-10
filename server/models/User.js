@@ -56,8 +56,6 @@ const UserSchema = new mongoose.Schema(
 );
 
 // Indexes for better performance
-UserSchema.index({ email: 1 });
-UserSchema.index({ username: 1 });
 UserSchema.index({ skillsOffered: 1 });
 UserSchema.index({ skillsSought: 1 });
 UserSchema.index({ 'location.city': 1 });
