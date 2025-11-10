@@ -208,7 +208,7 @@ export default function ProgressCard({ skill }) {
       <h3>{skill}</h3>
       <div className="level">Level {progress.level}</div>
       <div className="xp-bar">
-        <div style={{ width: `${(progress.xp / (progress.level * 100)) * 100}%` }} />
+        <div style={% raw %}{{ width: `${(progress.xp / (progress.level * 100)) * 100}%` }}{% endraw %} />
       </div>
       <div className="stats">
         <span>Sessions: {progress.sessionsCompleted}</span>
