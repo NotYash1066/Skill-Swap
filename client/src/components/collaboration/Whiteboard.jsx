@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { fabric } from 'fabric';
+import * as fabric from 'fabric';
 import './Whiteboard.css';
 
 const Whiteboard = ({ socket, roomId, onClose }) => {
