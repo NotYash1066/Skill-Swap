@@ -76,13 +76,10 @@ app.use(sanitizeInput);
 app.get("/", (req, res) => {
 	res.json({ message: "Welcome to SkillSwap API" });
 });
-// DB Connection
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/SkillSwapDB')
-  .then(() => logger.info('MongoDB connected successfully'))
-  .catch(err => {
-    logger.error('MongoDB connection error:', err);
-    process.exit(1);
-  });
+
+const connectDB = require('./config/db');
+// Connect to Database
+connectDB();
 
 // Import routes
 const authRoutes = require("./routes/auth");
