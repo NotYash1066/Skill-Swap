@@ -1,6 +1,6 @@
 # Plan: Project Stabilization and Security Hardening
 
-## Phase 1: Security and Validation Audit
+## Phase 1: Security and Validation Audit [checkpoint: 1cec99b]
 
 - [x] Task: Audit and harden API endpoints for XSS and NoSQL injection [d8817f5]
 - [x] Task: Implement missing rate-limiting on sensitive routes (auth, requests) [ee9f051]
