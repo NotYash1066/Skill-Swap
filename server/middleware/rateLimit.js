@@ -34,8 +34,20 @@ const skillsLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+const requestLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // Limit match requests to prevent spam
+  message: {
+    success: false,
+    errors: ['Too many match requests. Please try again in 15 minutes.']
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 module.exports = {
   authLimiter,
   apiLimiter,
-  skillsLimiter
+  skillsLimiter,
+  requestLimiter
 };

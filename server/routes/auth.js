@@ -9,6 +9,22 @@ const { authLimiter, skillsLimiter } = require("../middleware/rateLimit");
 const { validateObjectId } = require("../middleware/inputValidation");
 const { LIMITS } = require("../constants");
 const upload = require("../middleware/upload");
+const nodemailer = require("nodemailer");
+
+// Create transporter once (singleton pattern for efficiency)
+let transporter = null;
+const getTransporter = () => {
+	if (!transporter) {
+		transporter = nodemailer.createTransport({
+			service: "gmail",
+			auth: {
+				user: process.env.EMAIL_USER,
+				pass: process.env.EMAIL_PASS,
+			},
+		});
+	}
+	return transporter;
+};
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
@@ -303,38 +319,97 @@ router.get("/user/:id", validateObjectId, async (req, res, next) => {
 	}
 });
 
-module.exports = router;
-
 // @route   POST /api/auth/forgot-password
 // @desc    Send password reset email
-router.post("/forgot-password", async (req, res, next) => {
+router.post("/forgot-password", authLimiter, async (req, res, next) => {
 	try {
 		const { email } = req.body;
 		const user = await User.findOne({ email });
 		if (!user) {
-			return res.status(404).json({ msg: 'User not found' });
+			// Security best practice: Don't reveal if user exists
+			return res.json({
+				success: true,
+				msg: "If an account exists, a reset email has been sent",
+			});
 		}
-		res.json({ success: true, msg: 'Password reset email sent' });
+
+		// Generate secure reset token
+		const resetToken = jwt.sign(
+			{ userId: user._id, type: "password_reset" },
+			process.env.JWT_SECRET,
+			{ expiresIn: "1h" }
+		);
+
+		// Send email
+		const transporter = getTransporter();
+		await transporter.sendMail({
+			from: process.env.EMAIL_USER,
+			to: email,
+			subject: "Password Reset - SkillSwap",
+			html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Password Reset Request</h2>
+          <p>You requested a password reset for your SkillSwap account.</p>
+          <p>Click the link below to reset your password:</p>
+          <a href="${process.env.CLIENT_URL}/reset-password?token=${resetToken}" 
+             style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            Reset Password
+          </a>
+          <p>This link will expire in 1 hour.</p>
+          <p>If you didn't request this, please ignore this email.</p>
+        </div>
+      `,
+		});
+
+		res.json({ success: true, msg: "Password reset email sent" });
 	} catch (err) {
+		console.error("Password reset error:", err);
 		return next(err);
 	}
 });
 
 // @route   POST /api/auth/refresh-token
 // @desc    Refresh JWT token
-router.post("/refresh-token", async (req, res, next) => {
+router.post("/refresh-token", authLimiter, async (req, res, next) => {
 	try {
 		const { refreshToken } = req.body;
 		if (!refreshToken) {
-			return res.status(401).json({ msg: 'Refresh token required' });
+			return res.status(401).json({ msg: "Refresh token required" });
 		}
+
+		// Verify refresh token
+		let decoded;
 		try {
-			jwt.verify(refreshToken, process.env.JWT_SECRET);
-			return res.status(403).json({ msg: 'Invalid refresh token' });
+			decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
 		} catch (err) {
-			return res.status(403).json({ msg: 'Invalid refresh token' });
+			if (err instanceof jwt.TokenExpiredError) {
+				return res.status(401).json({ msg: "Refresh token expired" });
+			}
+			return res.status(401).json({ msg: "Invalid refresh token" });
 		}
+
+		// Check if token is a refresh token type (if you implemented types, otherwise just check user)
+		// Assuming simple verification for now as per original code structure, but improved
+		
+		const user = await User.findById(decoded.user.id);
+		if (!user) {
+			return res.status(401).json({ msg: "User not found" });
+		}
+
+		// Generate new access token
+		const payload = {
+			user: {
+				id: user.id,
+			},
+		};
+		const newToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "5h" });
+
+		res.json({ success: true, token: newToken });
 	} catch (err) {
 		return next(err);
 	}
 });
+
+module.exports = router;
+
+

@@ -7,6 +7,7 @@ const User = require('../models/User');
 const Match = require('../models/Match');
 const ChatRoom = require('../models/ChatRoom');
 const { createNotification } = require('../utils/notificationHelper');
+const { requestLimiter } = require('../middleware/rateLimit');
 const { sanitizeRegexInput } = require('../utils/validators');
 const { MATCH_STATUS, LIMITS } = require('../constants');
 
@@ -26,7 +27,7 @@ router.get('/potential', auth, async (req, res, next) => {
     const userOffered = Array.isArray(currentUser?.skillsOffered) ? currentUser.skillsOffered : [];
 
     // Exclude users you already have any match with (pending/accepted/rejected)
-    const userId = mongoose.Types.ObjectId(req.user.id);
+    const userId = new mongoose.Types.ObjectId(req.user.id);
     const existingMatches = await Match.find({
       $or: [
         { requester: userId },
@@ -131,12 +132,12 @@ router.get('/potential', auth, async (req, res, next) => {
 
 // @route   POST /api/matches/request
 // @desc    Send a match request
-router.post('/request', auth, validateObjectId, async (req, res, next) => {
+router.post('/request', auth, requestLimiter, validateObjectId, async (req, res, next) => {
   try {
     const { recipientId, message, matchedSkills } = req.body;
 
     // Basic validation
-    if (!recipientId || !mongoose.Types.ObjectId.isValid(recipientId)) {
+    if (!recipientId || !mongoose.isValidObjectId(recipientId)) {
       return res.status(400).json({ msg: 'Invalid recipientId' });
     }
     if (!message || !message.trim() || message.trim().length > LIMITS.MAX_MATCH_MESSAGE_LENGTH) {
