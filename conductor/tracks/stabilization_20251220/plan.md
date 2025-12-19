@@ -17,6 +17,6 @@
 ## Phase 3: Test Coverage and Reliability
 
 - [x] Task: Fix broken unit tests in `server/tests/` [87537f8]
-- [~] Task: Increase test coverage for critical services (Notification, Match)
+- [x] Task: Increase test coverage for critical services (Notification, Match) [386ce31]
 - [ ] Task: Ensure robust error handling and logging across the backend
 - [ ] Task: Conductor - User Manual Verification 'Test Coverage and Reliability' (Protocol in workflow.md)
