@@ -117,8 +117,7 @@ router.post("/refresh-token", async (req, res, next) => {
 // @desc    Logout user (clear refresh token)
 router.post("/logout", auth, async (req, res, next) => {
 	try {
-		req.user.refreshToken = null;
-		await req.user.save();
+		await User.findByIdAndUpdate(req.user.id, { refreshToken: null });
 		res.json({ success: true, message: 'Logged out successfully' });
 	} catch (err) {
 		return next(err);

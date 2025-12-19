@@ -250,6 +250,7 @@ const Dashboard = () => {
             <Link to="/dashboard" className="nav-link active">Dashboard</Link>
             <Link to="/matches" className="nav-link">Matches</Link>
             <Link to="/chat" className="nav-link">Chat</Link>
+            <Link to="/profile-settings" className="nav-link">Profile</Link>
             <span>Welcome, {user?.username}!</span>
             <NotificationBell socket={socket} />
             <ThemeToggle />
@@ -345,7 +346,12 @@ const Dashboard = () => {
 
         {/* Profile Summary */}
         <div className="profile-summary">
-          <h2>Profile Summary</h2>
+          <div className="profile-header">
+            <h2>Profile Summary</h2>
+            <button onClick={() => navigate('/profile-settings')} className="settings-btn">
+              Edit Profile
+            </button>
+          </div>
           <div className="summary-content">
             <div className="summary-item">
               <strong>Username</strong>
@@ -395,6 +401,14 @@ const Dashboard = () => {
             <div className="summary-item">
               <strong>Skills Sought</strong>
               <span>{skillsSought.length} skills</span>
+            </div>
+            <div className="summary-item">
+              <strong>Location</strong>
+              <span>{user?.location?.city && user?.location?.country ? `${user.location.city}, ${user.location.country}` : 'Not set'}</span>
+            </div>
+            <div className="summary-item">
+              <strong>Availability</strong>
+              <span>{user?.availability?.length > 0 ? `${user.availability.length} time slots` : 'Not set'}</span>
             </div>
             <div className="summary-item">
               <strong>Member Since</strong>

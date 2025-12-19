@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { VideoCallProvider } from "./contexts/VideoCallContext";
@@ -9,6 +10,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
+import ProfileSettings from "./pages/ProfileSettings";
 import "./styles/App.css";
 import "./styles/themes.css";
 
@@ -16,12 +18,33 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsAuthenticated(true);
+  const verifyToken = async (token) => {
+    try {
+      const response = await axios.get("/api/auth/verify-token", {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 5000,
+      });
+      return response.data.success;
+    } catch (error) {
+      console.error("Token verification failed:", error.message);
+      return false;
     }
-    setLoading(false);
+  };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const isValid = await verifyToken(token);
+        setIsAuthenticated(isValid);
+        if (!isValid) {
+          localStorage.removeItem("token");
+        }
+      }
+      setLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
   if (loading) {
@@ -56,6 +79,10 @@ function App() {
               <Route 
                 path="/chat" 
                 element={isAuthenticated ? <Chat /> : <Navigate to="/login" />} 
+              />
+              <Route 
+                path="/profile-settings" 
+                element={isAuthenticated ? <ProfileSettings /> : <Navigate to="/login" />} 
               />
               <Route 
                 path="/" 

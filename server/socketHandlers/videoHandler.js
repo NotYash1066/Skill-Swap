@@ -1,17 +1,19 @@
+const logger = require('../utils/logger');
+
 const videoHandler = (io) => {
   // Store active video rooms and their participants
   const videoRooms = new Map();
   const userSockets = new Map();
 
   const handleVideoConnection = (socket) => {
-    console.log('Video handler attached for socket:', socket.id);
+    logger.info('Video handler attached for socket:', socket.id);
 
     // Store user socket mapping
     socket.on('register-user', (userId) => {
       if (!userId || typeof userId !== 'string') return;
       userSockets.set(userId, socket.id);
       socket.userId = userId;
-      console.log(`User ${userId} registered with socket ${socket.id}`);
+      logger.info(`User ${userId} registered with socket ${socket.id}`);
     });
 
     // Handle video call initiation
@@ -25,7 +27,7 @@ const videoHandler = (io) => {
         const targetSocketId = userSockets.get(targetUserId);
         
         if (targetSocketId) {
-          console.log(`Initiating video call from ${callerId} to ${targetUserId}`);
+          logger.info(`Initiating video call from ${callerId} to ${targetUserId}`);
           
           // Create a unique room ID for this call
           const roomId = `video_${callerId}_${targetUserId}_${Date.now()}`;
@@ -43,7 +45,7 @@ const videoHandler = (io) => {
           socket.emit('call-error', { message: 'User is not online' });
         }
       } catch (error) {
-        console.error('Error initiating video call:', error);
+        logger.error('Error initiating video call:', error);
         socket.emit('call-error', { message: 'Failed to initiate call' });
       }
     });
@@ -56,7 +58,7 @@ const videoHandler = (io) => {
         const callerSocketId = userSockets.get(callerId);
         
         if (callerSocketId) {
-          console.log(`Video call accepted for room: ${roomId}`);
+          logger.info(`Video call accepted for room: ${roomId}`);
           
           // Initialize room data
           videoRooms.set(roomId, {
@@ -70,7 +72,7 @@ const videoHandler = (io) => {
           socket.emit('call-accepted', { roomId });
         }
       } catch (error) {
-        console.error('Error accepting video call:', error);
+        logger.error('Error accepting video call:', error);
         socket.emit('call-error', { message: 'Failed to accept call' });
       }
     });
@@ -83,11 +85,11 @@ const videoHandler = (io) => {
         const callerSocketId = userSockets.get(callerId);
         
         if (callerSocketId) {
-          console.log(`Video call rejected for room: ${roomId}`);
+          logger.info(`Video call rejected for room: ${roomId}`);
           io.to(callerSocketId).emit('call-rejected', { roomId, reason });
         }
       } catch (error) {
-        console.error('Error rejecting video call:', error);
+        logger.error('Error rejecting video call:', error);
       }
     });
 
@@ -100,7 +102,7 @@ const videoHandler = (io) => {
         
         const room = videoRooms.get(roomId);
         if (room) {
-          console.log(`User ${socket.userId} joined video room: ${roomId}`);
+          logger.info(`User ${socket.userId} joined video room: ${roomId}`);
           
           // Notify other participants
           socket.to(roomId).emit('user-joined-video', {
@@ -111,7 +113,7 @@ const videoHandler = (io) => {
           socket.emit('joined-video-room', { roomId });
         }
       } catch (error) {
-        console.error('Error joining video room:', error);
+        logger.error('Error joining video room:', error);
         socket.emit('call-error', { message: 'Failed to join video room' });
       }
     });
@@ -120,7 +122,7 @@ const videoHandler = (io) => {
     socket.on('video-offer', (data) => {
       const { roomId, offer, targetSocketId } = data;
       if (!roomId || !offer) return;
-      console.log(`Video offer sent in room: ${roomId}`);
+      logger.info(`Video offer sent in room: ${roomId}`);
       
       if (targetSocketId) {
         io.to(targetSocketId).emit('video-offer', {
@@ -141,7 +143,7 @@ const videoHandler = (io) => {
     socket.on('video-answer', (data) => {
       const { roomId, answer, targetSocketId } = data;
       if (!roomId || !answer || !targetSocketId) return;
-      console.log(`Video answer sent in room: ${roomId}`);
+      logger.info(`Video answer sent in room: ${roomId}`);
       
       io.to(targetSocketId).emit('video-answer', {
         answer,
@@ -172,7 +174,7 @@ const videoHandler = (io) => {
     // Handle screen sharing
     socket.on('start-screen-share', (data) => {
       const { roomId } = data;
-      console.log(`Screen sharing started in room: ${roomId}`);
+      logger.info(`Screen sharing started in room: ${roomId}`);
       socket.to(roomId).emit('screen-share-started', {
         userId: socket.userId,
         socketId: socket.id
@@ -181,7 +183,7 @@ const videoHandler = (io) => {
 
     socket.on('stop-screen-share', (data) => {
       const { roomId } = data;
-      console.log(`Screen sharing stopped in room: ${roomId}`);
+      logger.info(`Screen sharing stopped in room: ${roomId}`);
       socket.to(roomId).emit('screen-share-stopped', {
         userId: socket.userId
       });
@@ -191,7 +193,7 @@ const videoHandler = (io) => {
     socket.on('end-video-call', (data) => {
       try {
         const { roomId } = data;
-        console.log(`Video call ended in room: ${roomId}`);
+        logger.info(`Video call ended in room: ${roomId}`);
         
         // Notify all participants
         socket.to(roomId).emit('call-ended', {
@@ -206,13 +208,13 @@ const videoHandler = (io) => {
           room.endedAt = new Date();
         }
       } catch (error) {
-        console.error('Error ending video call:', error);
+        logger.error('Error ending video call:', error);
       }
     });
 
     // Handle disconnect
     socket.on('disconnect', () => {
-      console.log(`User ${socket.userId} disconnected from video handler`);
+      logger.info(`User ${socket.userId} disconnected from video handler`);
       
       // Remove from user sockets mapping
       if (socket.userId) {
@@ -222,7 +224,7 @@ const videoHandler = (io) => {
       // Handle any active video calls
       for (const [roomId, room] of videoRooms.entries()) {
         if (room.active && room.participants.includes(socket.userId)) {
-          console.log(`User ${socket.userId} disconnected from active video room: ${roomId}`);
+          logger.info(`User ${socket.userId} disconnected from active video room: ${roomId}`);
           
           // Notify other participants
           socket.to(roomId).emit('participant-disconnected', {

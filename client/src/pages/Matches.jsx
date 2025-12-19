@@ -281,6 +281,9 @@ const Matches = () => {
           <Link to="/dashboard" className="back-btn">
             ← Back to Dashboard
           </Link>
+          <Link to="/profile-settings" className="back-btn">
+            Profile Settings
+          </Link>
           <ThemeToggle />
         </div>
         <h1>Find Your Perfect Match</h1>

@@ -10,8 +10,12 @@ router.post('/verify-request', auth, async (req, res, next) => {
   try {
     const { skill, verifierId } = req.body;
     
+    if (!skill || !verifierId) {
+      return res.status(400).json({ message: 'skill and verifierId are required' });
+    }
+    
     const completedSessions = await Session.countDocuments({
-      'participants.user': { $all: [req.user._id, verifierId] },
+      'participants.user': { $all: [req.user.id, verifierId] },
       skill,
       status: 'completed'
     });
@@ -39,6 +43,10 @@ router.post('/verify', auth, async (req, res, next) => {
   try {
     const { userId, skill } = req.body;
     
+    if (!userId || !skill) {
+      return res.status(400).json({ message: 'userId and skill are required' });
+    }
+    
     let badge = await Badge.findOne({ user: userId, skill, type: 'verified' });
     
     if (!badge) {
@@ -46,11 +54,11 @@ router.post('/verify', auth, async (req, res, next) => {
         user: userId,
         skill,
         type: 'verified',
-        verifiedBy: [req.user._id]
+        verifiedBy: [req.user.id]
       });
     } else {
-      if (!badge.verifiedBy.includes(req.user._id)) {
-        badge.verifiedBy.push(req.user._id);
+      if (!badge.verifiedBy.some(id => id.toString() === req.user.id)) {
+        badge.verifiedBy.push(req.user.id);
         await badge.save();
       }
     }

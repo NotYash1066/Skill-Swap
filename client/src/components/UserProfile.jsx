@@ -30,7 +30,10 @@ const UserProfile = ({ userId, onClose }) => {
 
   const fetchReviews = async () => {
     try {
-      const res = await axios.get(API_ENDPOINTS.REVIEWS.USER(userId));
+      const token = localStorage.getItem('token');
+      const res = await axios.get(API_ENDPOINTS.REVIEWS.USER(userId), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setReviews(res.data);
     } catch (err) {
       console.error('Error fetching reviews:', err);
@@ -87,7 +90,7 @@ const UserProfile = ({ userId, onClose }) => {
             {user.skillsOffered?.map(skill => (
               <span key={skill} className="skill-tag offered">
                 {skill}
-                {user.proficiency?.get?.(skill) && <small> ({user.proficiency.get(skill)})</small>}
+                {user.proficiency?.[skill] && <small> ({user.proficiency[skill]})</small>}
               </span>
             ))}
           </div>

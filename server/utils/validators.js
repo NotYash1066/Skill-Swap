@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const isValidObjectId = (id) => {
-  return id && mongoose.Types.ObjectId.isValid(id);
+  return id && mongoose.isValidObjectId(id);
 };
 
 const sanitizeString = (str, maxLength = 1000) => {

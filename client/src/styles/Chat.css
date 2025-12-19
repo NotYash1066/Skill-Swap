@@ -61,7 +61,7 @@
 }
 
 .chat-room-item.active {
-  background: #e3f2fd;
+  background: var(--hover-bg);
   border-left: 4px solid #667eea;
 }
 

@@ -246,6 +246,9 @@ const handleCallEnd = () => {
           <button onClick={() => navigate('/dashboard')} className="back-btn">
             ← Back
           </button>
+          <button onClick={() => navigate('/profile-settings')} className="back-btn">
+            Profile
+          </button>
         </div>
         
         <div className="chat-rooms-list">

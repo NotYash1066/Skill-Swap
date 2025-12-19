@@ -17,12 +17,16 @@ router.get('/potential-enhanced', auth, cache(300), async (req, res, next) => {
       location 
     } = req.query;
     
-    const currentUser = await User.findById(req.user._id);
+    const currentUser = await User.findById(req.user.id);
+    
+    if (!currentUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
     
     let query = {
-      _id: { $ne: req.user._id },
-      skillsOffered: { $in: currentUser.skillsWanted },
-      skillsWanted: { $in: currentUser.skillsOffered }
+      _id: { $ne: req.user.id },
+      skillsOffered: { $in: currentUser.skillsSought || [] },
+      skillsSought: { $in: currentUser.skillsOffered || [] }
     };
     
     if (minRating) {
@@ -48,11 +52,11 @@ router.get('/potential-enhanced', auth, cache(300), async (req, res, next) => {
     }
     
     const existingMatches = await Match.find({
-      $or: [{ requester: req.user._id }, { recipient: req.user._id }]
+      $or: [{ requester: req.user.id }, { recipient: req.user.id }]
     }).select('requester recipient');
     
     const excludeIds = existingMatches.map(m => 
-      m.requester.equals(req.user._id) ? m.recipient : m.requester
+      m.requester.toString() === req.user.id ? m.recipient : m.requester
     );
     
     if (excludeIds.length) {

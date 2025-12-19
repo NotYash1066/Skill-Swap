@@ -19,6 +19,7 @@ const { sanitizeInput } = require('./middleware/inputValidation');
 const validateContentType = require('./middleware/contentType');
 const requestLogger = require('./middleware/requestLogger');
 const timeout = require('./middleware/timeout');
+const compression = require('compression');
 
 const app = express();
 const server = http.createServer(app);
@@ -61,6 +62,8 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true })); // Add urlencoded support
+app.use(compression()); // Enable gzip compression
 app.use('/uploads', express.static('uploads'));
 app.use(timeout(30));
 app.use(requestLogger);
@@ -138,7 +141,7 @@ io.on('connection', (socket) => {
   // Join user to their chat rooms
   socket.on('join-rooms', async (userId) => {
     try {
-      if (!userId || typeof userId !== 'string' || !mongoose.Types.ObjectId.isValid(userId)) return;
+      if (!mongoose.isValidObjectId(userId)) return;
       const userRooms = await ChatRoom.find({
         participants: userId,
         isActive: true
@@ -157,7 +160,7 @@ io.on('connection', (socket) => {
     try {
       const { roomId, content, senderId } = data;
       if (!roomId || !senderId || !content) return;
-      if (!mongoose.Types.ObjectId.isValid(roomId) || !mongoose.Types.ObjectId.isValid(senderId)) return;
+      if (!mongoose.isValidObjectId(roomId) || !mongoose.isValidObjectId(senderId)) return;
       if (typeof content !== 'string' || content.trim().length === 0 || content.length > 5000) return;
 
       // Create and save message
@@ -199,6 +202,12 @@ io.on('connection', (socket) => {
   // Handle typing indicators
   socket.on('typing', (data) => {
     if (!data?.roomId || !data?.userId) return;
+    
+    // Throttle typing events to once every 300ms
+    const now = Date.now();
+    if (socket.lastTyping && now - socket.lastTyping < 300) return;
+    socket.lastTyping = now;
+
     socket.to(data.roomId).emit('user-typing', {
       userId: data.userId,
       username: data.username || 'User'

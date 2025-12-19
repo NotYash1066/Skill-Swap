@@ -39,6 +39,7 @@
   
   /* Interactive States */
   --hover-bg: #f8fafc;
+  --bg-hover: #f8fafc;
   --hover-border: #cbd5e0;
   --active-bg: #edf2f7;
   --focus-ring: 0 0 0 3px rgba(102, 126, 234, 0.15);
@@ -135,6 +136,7 @@
   
   /* Interactive States */
   --hover-bg: #21262d;
+  --bg-hover: #21262d;
   --hover-border: #484f58;
   --active-bg: #30363d;
   --focus-ring: 0 0 0 3px rgba(102, 126, 234, 0.25);

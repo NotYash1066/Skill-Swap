@@ -13,7 +13,7 @@ router.post('/', auth, apiLimiter, validateObjectId, async (req, res, next) => {
   try {
     const { revieweeId, matchId, rating, comment } = req.body;
     
-    if (!mongoose.Types.ObjectId.isValid(revieweeId) || !mongoose.Types.ObjectId.isValid(matchId)) {
+    if (!mongoose.isValidObjectId(revieweeId) || !mongoose.isValidObjectId(matchId)) {
       return res.status(400).json({ msg: 'Invalid ID format' });
     }
     
@@ -25,8 +25,8 @@ router.post('/', auth, apiLimiter, validateObjectId, async (req, res, next) => {
       _id: matchId,
       status: 'accepted',
       $or: [
-        { requester: mongoose.Types.ObjectId(req.user.id) },
-        { recipient: mongoose.Types.ObjectId(req.user.id) }
+        { requester: req.user.id },
+        { recipient: req.user.id }
       ]
     });
     
@@ -57,11 +57,11 @@ router.post('/', auth, apiLimiter, validateObjectId, async (req, res, next) => {
 // Get user reviews
 router.get('/user/:userId', auth, validateObjectId, async (req, res, next) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.userId)) {
+    if (!mongoose.isValidObjectId(req.params.userId)) {
       return res.status(400).json({ msg: 'Invalid user ID' });
     }
     const reviews = await Review.find({ 
-      reviewee: mongoose.Types.ObjectId(req.params.userId) 
+      reviewee: req.params.userId 
     }).populate('reviewer', 'username avatar')
       .sort({ createdAt: -1 })
       .limit(20);

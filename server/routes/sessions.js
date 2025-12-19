@@ -8,9 +8,13 @@ router.post('/', auth, async (req, res, next) => {
   try {
     const { recipientId, skill, scheduledAt, duration } = req.body;
     
+    if (!recipientId || !skill || !scheduledAt) {
+      return res.status(400).json({ message: 'recipientId, skill, and scheduledAt are required' });
+    }
+    
     const session = await Session.create({
       participants: [
-        { user: req.user._id, role: 'teacher' },
+        { user: req.user.id, role: 'teacher' },
         { user: recipientId, role: 'learner' }
       ],
       skill,
@@ -28,7 +32,7 @@ router.post('/', auth, async (req, res, next) => {
 router.get('/', auth, async (req, res, next) => {
   try {
     const sessions = await Session.find({
-      'participants.user': req.user._id,
+      'participants.user': req.user.id,
       scheduledAt: { $gte: new Date() }
     })
     .populate('participants.user', 'username avatar')
@@ -49,7 +53,7 @@ router.put('/:id', auth, async (req, res, next) => {
       return res.status(404).json({ message: 'Session not found' });
     }
 
-    const isParticipant = session.participants.some(p => p.user.equals(req.user._id));
+    const isParticipant = session.participants.some(p => p.user.toString() === req.user.id);
     if (!isParticipant) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
@@ -73,7 +77,7 @@ router.delete('/:id', auth, async (req, res, next) => {
       return res.status(404).json({ message: 'Session not found' });
     }
 
-    const isParticipant = session.participants.some(p => p.user.equals(req.user._id));
+    const isParticipant = session.participants.some(p => p.user.toString() === req.user.id);
     if (!isParticipant) {
       return res.status(403).json({ message: 'Unauthorized' });
     }

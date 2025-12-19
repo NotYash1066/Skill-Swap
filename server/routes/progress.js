@@ -39,13 +39,13 @@ const checkAchievements = async (progress) => {
 router.get('/:skill', auth, async (req, res, next) => {
   try {
     let progress = await Progress.findOne({ 
-      user: req.user._id, 
+      user: req.user.id, 
       skill: req.params.skill 
     });
     
     if (!progress) {
       progress = await Progress.create({
-        user: req.user._id,
+        user: req.user.id,
         skill: req.params.skill
       });
     }
@@ -59,8 +59,14 @@ router.get('/:skill', auth, async (req, res, next) => {
 // Add milestone
 router.post('/:skill/milestone', auth, async (req, res, next) => {
   try {
+    const { title, description } = req.body;
+    
+    if (!title) {
+      return res.status(400).json({ message: 'title is required' });
+    }
+    
     const progress = await Progress.findOne({ 
-      user: req.user._id, 
+      user: req.user.id, 
       skill: req.params.skill 
     });
     
@@ -69,8 +75,8 @@ router.post('/:skill/milestone', auth, async (req, res, next) => {
     }
     
     progress.milestones.push({
-      title: req.body.title,
-      description: req.body.description,
+      title,
+      description: description || '',
       completedAt: new Date()
     });
     
@@ -87,13 +93,13 @@ router.post('/:skill/milestone', auth, async (req, res, next) => {
 router.post('/:skill/session', auth, async (req, res, next) => {
   try {
     let progress = await Progress.findOne({ 
-      user: req.user._id, 
+      user: req.user.id, 
       skill: req.params.skill 
     });
     
     if (!progress) {
       progress = await Progress.create({
-        user: req.user._id,
+        user: req.user.id,
         skill: req.params.skill
       });
     }
