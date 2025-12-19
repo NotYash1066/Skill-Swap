@@ -1,6 +1,7 @@
 const request = require('supertest');
 const express = require('express');
-const { sanitizeInput } = require('../middleware/inputValidation');
+const { sanitizeInput, validateObjectId } = require('../middleware/inputValidation');
+const mongoose = require('mongoose');
 
 describe('Security Middleware', () => {
     let app;
@@ -8,16 +9,48 @@ describe('Security Middleware', () => {
     beforeEach(() => {
         app = express();
         app.use(express.json());
-        app.use(sanitizeInput);
-        app.post('/test', (req, res) => {
-            res.json(req.body);
+    });
+
+    describe('ObjectId Validation', () => {
+        beforeEach(() => {
+            app.get('/test/:id', validateObjectId, (req, res) => res.json({ success: true }));
+            app.post('/test', validateObjectId, (req, res) => res.json({ success: true }));
+        });
+
+        it('should accept valid ObjectId in params', async () => {
+            const validId = new mongoose.Types.ObjectId();
+            const res = await request(app).get(`/test/${validId}`);
+            expect(res.status).toBe(200);
+        });
+
+        it('should reject invalid ObjectId in params', async () => {
+            const res = await request(app).get('/test/invalid-id');
+            expect(res.status).toBe(400);
+            expect(res.body.errors).toContain('Invalid id');
+        });
+
+        it('should accept valid ObjectId in body', async () => {
+            const validId = new mongoose.Types.ObjectId();
+            const res = await request(app).post('/test').send({ userId: validId });
+            expect(res.status).toBe(200);
+        });
+
+        it('should reject invalid ObjectId in body', async () => {
+            const res = await request(app).post('/test').send({ userId: 'invalid-id' });
+            expect(res.status).toBe(400);
+            expect(res.body.errors).toContain('Invalid userId');
         });
     });
 
     describe('NoSQL Injection Prevention', () => {
+        beforeEach(() => {
+             app.use(sanitizeInput);
+             app.post('/test-sanitize', (req, res) => res.json(req.body));
+        });
+
         it('should remove keys starting with $', async () => {
             const res = await request(app)
-                .post('/test')
+                .post('/test-sanitize')
                 .send({
                     username: 'user',
                     $where: 'this.password.length > 0'
@@ -29,7 +62,7 @@ describe('Security Middleware', () => {
 
         it('should remove nested keys starting with $', async () => {
             const res = await request(app)
-                .post('/test')
+                .post('/test-sanitize')
                 .send({
                     data: {
                         $gt: 0
@@ -42,15 +75,19 @@ describe('Security Middleware', () => {
     });
 
     describe('XSS Prevention', () => {
+        beforeEach(() => {
+             app.use(sanitizeInput);
+             app.post('/test-sanitize', (req, res) => res.json(req.body));
+        });
+
         it('should escape HTML characters in strings', async () => {
             const payload = '<script>alert(1)</script>';
             const res = await request(app)
-                .post('/test')
+                .post('/test-sanitize')
                 .send({
                     content: payload
                 });
             
-            // This is expected to FAIL currently because sanitizeInput doesn't handle XSS
             expect(res.body.content).not.toContain('<script>');
             expect(res.body.content).toBe('&lt;script&gt;alert(1)&lt;&#x2F;script&gt;');
         });
