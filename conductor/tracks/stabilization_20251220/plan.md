@@ -14,9 +14,9 @@
 - [x] Task: Correct matching algorithm edge cases (e.g., empty skill sets) [3cbc3c6]
 - [x] Task: Conductor - User Manual Verification 'Critical Bug Resolution' (Protocol in workflow.md)
 
-## Phase 3: Test Coverage and Reliability
+## Phase 3: Test Coverage and Reliability [checkpoint: c718d89]
 
 - [x] Task: Fix broken unit tests in `server/tests/` [87537f8]
 - [x] Task: Increase test coverage for critical services (Notification, Match) [386ce31]
 - [x] Task: Ensure robust error handling and logging across the backend [9153be6]
-- [ ] Task: Conductor - User Manual Verification 'Test Coverage and Reliability' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Test Coverage and Reliability' (Protocol in workflow.md)
