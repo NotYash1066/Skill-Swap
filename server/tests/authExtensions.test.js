@@ -3,6 +3,13 @@ const mongoose = require('mongoose');
 const app = require('../testApp');
 const User = require('../models/User');
 
+// Mock nodemailer
+jest.mock('nodemailer', () => ({
+  createTransport: jest.fn().mockReturnValue({
+    sendMail: jest.fn().mockResolvedValue(true)
+  })
+}));
+
 describe('Auth Extensions', () => {
   beforeAll(async () => {
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/SkillSwapTestDB');
@@ -32,12 +39,14 @@ describe('Auth Extensions', () => {
       expect(res.body.success).toBe(true);
     });
 
-    it('should return 404 for non-existent user', async () => {
+    it('should return 200 even for non-existent user (Security)', async () => {
       const res = await request(app)
         .post('/api/auth/forgot-password')
         .send({ email: 'nonexistent@example.com' });
 
-      expect(res.statusCode).toBe(404);
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.msg).toContain('If an account exists');
     });
   });
 
@@ -47,7 +56,7 @@ describe('Auth Extensions', () => {
         .post('/api/auth/refresh-token')
         .send({ refreshToken: 'invalid-token' });
 
-      expect(res.statusCode).toBe(403);
+      expect(res.statusCode).toBe(401);
     });
 
     it('should require refresh token', async () => {
