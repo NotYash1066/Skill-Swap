@@ -88,14 +88,14 @@ router.get('/potential', auth, async (req, res, next) => {
       // Skills they offer that we want
       const theirOfferedWeWant = otherOffered.filter(skill => 
         userSought.some(sought => 
-          sought.toLowerCase().includes(skill.toLowerCase())
+          sought.toLowerCase() === skill.toLowerCase()
         )
       );
       
       // Skills we offer that they want
       const weOfferTheyWant = userOffered.filter(skill => 
         otherSought.some(sought => 
-          sought.toLowerCase().includes(skill.toLowerCase())
+          sought.toLowerCase() === skill.toLowerCase()
         )
       );
       
