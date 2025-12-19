@@ -3,7 +3,7 @@
 ## Phase 1: Security and Validation Audit
 
 - [x] Task: Audit and harden API endpoints for XSS and NoSQL injection [d8817f5]
-- [ ] Task: Implement missing rate-limiting on sensitive routes (auth, requests)
+- [x] Task: Implement missing rate-limiting on sensitive routes (auth, requests) [ee9f051]
 - [ ] Task: Validate and sanitize all user-provided inputs in middleware
 - [ ] Task: Conductor - User Manual Verification 'Security and Validation Audit' (Protocol in workflow.md)
 
