@@ -86,8 +86,13 @@ router.post(
 					id: user.id,
 				},
 			};
-			const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "5h" });
-			return res.json({ success: true, token });
+			const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" }); // Short-lived access token
+			const refreshToken = jwt.sign(
+				payload,
+				process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET,
+				{ expiresIn: "7d" }
+			);
+			return res.json({ success: true, token, refreshToken });
 		} catch (err) {
 			return next(err);
 		}
@@ -141,8 +146,13 @@ router.post(
 					id: user.id,
 				},
 			};
-			const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "5h" });
-			return res.json({ success: true, token });
+			const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" }); // Short-lived access token
+			const refreshToken = jwt.sign(
+				payload,
+				process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET,
+				{ expiresIn: "7d" }
+			);
+			return res.json({ success: true, token, refreshToken });
 		} catch (err) {
 			return next(err);
 		}
@@ -380,7 +390,10 @@ router.post("/refresh-token", authLimiter, async (req, res, next) => {
 		// Verify refresh token
 		let decoded;
 		try {
-			decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+			decoded = jwt.verify(
+				refreshToken, 
+				process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET
+			);
 		} catch (err) {
 			if (err instanceof jwt.TokenExpiredError) {
 				return res.status(401).json({ msg: "Refresh token expired" });
@@ -388,9 +401,7 @@ router.post("/refresh-token", authLimiter, async (req, res, next) => {
 			return res.status(401).json({ msg: "Invalid refresh token" });
 		}
 
-		// Check if token is a refresh token type (if you implemented types, otherwise just check user)
-		// Assuming simple verification for now as per original code structure, but improved
-		
+		// Check if user exists
 		const user = await User.findById(decoded.user.id);
 		if (!user) {
 			return res.status(401).json({ msg: "User not found" });
@@ -402,8 +413,8 @@ router.post("/refresh-token", authLimiter, async (req, res, next) => {
 				id: user.id,
 			},
 		};
-		const newToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "5h" });
-
+		const newToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
+        // Optionally rotate refresh token here, but for now just return access token
 		res.json({ success: true, token: newToken });
 	} catch (err) {
 		return next(err);
