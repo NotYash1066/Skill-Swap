@@ -3,25 +3,45 @@ import react from '@vitejs/plugin-react'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    nodePolyfills({
-      // Whether to polyfill `node:` protocol imports.
-      protocolImports: true,
-    }),
-  ],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
+export default defineConfig(({ mode }) => {
+  console.log('Mode:', mode);
+  
+  const plugins = [];
+  
+  // Only add react plugin if NOT in test mode to avoid HMR preamble issues
+  if (mode !== 'test') {
+    plugins.push(react());
+  }
+  
+  plugins.push(nodePolyfills({
+    protocolImports: true,
+  }));
+
+  return {
+    plugins,
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5000',
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
-  },
-  define: {
-    global: 'window',
-    'process.env': {}
+    define: {
+      global: 'window',
+      'process.env': {}
+    },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/setupTests.js',
+      css: true,
+    },
+    esbuild: {
+      loader: 'jsx',
+      include: /src\/.*\.jsx?$/,
+      exclude: [],
+    },
   }
 })
