@@ -26,6 +26,9 @@ function App() {
       });
       return response.data.success;
     } catch (error) {
+      if (error.response && error.response.status === 401) {
+        return false;
+      }
       console.error("Token verification failed:", error.message);
       return false;
     }

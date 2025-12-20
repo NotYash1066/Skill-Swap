@@ -33,7 +33,11 @@ const Login = () => {
       localStorage.setItem('token', res.data.token);
       window.location.href = '/dashboard'; // Full page reload for proper auth state
     } catch (err) {
-      console.error('Login error:', err);
+      // Don't log expected validation/auth errors
+      if (!err.response || err.response.status !== 400) {
+        console.error('Login error:', err);
+      }
+      
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
       } else {
