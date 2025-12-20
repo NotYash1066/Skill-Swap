@@ -2,7 +2,7 @@
 
 ## Phase 1: Design System & Shared Components
 
-- [ ] Task: Define vibrant color palette and typography in `themes.css`
+- [~] Task: Define vibrant color palette and typography in `themes.css`
 - [ ] Task: Update base UI components (Buttons, Inputs, Cards) to the new playful style
 - [ ] Task: Write unit tests for updated base components
 - [ ] Task: Conductor - User Manual Verification 'Design System & Shared Components' (Protocol in workflow.md)
