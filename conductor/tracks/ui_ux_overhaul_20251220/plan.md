@@ -4,7 +4,7 @@
 
 - [x] Task: Define vibrant color palette and typography in `themes.css` [bf73156]
 - [x] Task: Update base UI components (Buttons, Inputs, Cards) to the new playful style [2b4c38e]
-- [ ] Task: Write unit tests for updated base components
+- [x] Task: Write unit tests for updated base components [35b5265]
 - [ ] Task: Conductor - User Manual Verification 'Design System & Shared Components' (Protocol in workflow.md)
 
 ## Phase 2: Core Page Redesign
