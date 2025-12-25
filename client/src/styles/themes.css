@@ -75,10 +75,15 @@
   --shadow-sm: 2px 2px 0px 0px rgba(41, 47, 54, 0.1);
   --shadow-md: 4px 4px 0px 0px rgba(41, 47, 54, 0.1);
   --shadow-lg: 6px 6px 0px 0px rgba(41, 47, 54, 0.15);
+  --shadow-xl: 0 10px 25px rgba(0, 0, 0, 0.1);
   
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, #FF8E53 100%);
   --gradient-success: linear-gradient(135deg, var(--color-secondary) 0%, #2ECC71 100%);
+  --gradient-error: linear-gradient(135deg, #FF6B6B 0%, #EE5253 100%);
+
+  /* Focus Ring */
+  --focus-ring: 0 0 0 4px rgba(78, 205, 196, 0.3);
 }
 
 /* 3. Modern & Minimalist Theme (Default) */
@@ -118,10 +123,15 @@
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
-  /* Gradients (Minimal) */
-  --gradient-primary: linear-gradient(135deg, #000000 0%, #1F2937 100%);
-  --gradient-success: linear-gradient(135deg, #374151 0%, #111827 100%);
+  /* Gradients (Replaced with Solid Colors for Readability) */
+  --gradient-primary: #000000; /* Solid Black */
+  --gradient-success: #374151; /* Solid Slate */
+  --gradient-error: #B91C1C; /* Solid Dark Red */
+
+  /* Focus Ring */
+  --focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 4px #000000;
 }
 
 /* 4. Dark Mode (Minimalist) */
@@ -144,6 +154,14 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.9);
   
   --bg-overlay: rgba(0, 0, 0, 0.85);
+
+  /* Solid Colors for Dark Mode too */
+  --gradient-primary: #FFFFFF; 
+  --gradient-success: #E5E7EB;
+  --gradient-error: #EF4444;
+
+  /* Focus Ring */
+  --focus-ring: 0 0 0 2px #000000, 0 0 0 4px #FFFFFF;
 }
 
 /* Legacy mappings */
@@ -157,6 +175,13 @@
   --shadow-playful-hover: var(--shadow-lg);
   --border-width-bold: var(--border-width);
   --gradient-fun: var(--gradient-primary);
+  
+  /* Additional for Auth.css */
+  --radius-2xl: 24px;
+  --error-bg: var(--bg-tertiary);
+  --error-color: #B91C1C;
+  --error-border: var(--border-color);
+  --border-light: var(--border-color);
 }
 
 body {

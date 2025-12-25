@@ -180,12 +180,6 @@ a:hover {
   color: var(--color-dark);
 }
 
-.btn-gradient {
-  background: var(--gradient-primary);
-  color: var(--text-inverse);
-  border: none;
-}
-
 .btn-sm {
   padding: var(--space-xs) var(--space-md);
   font-size: var(--font-size-xs);
