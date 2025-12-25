@@ -1,6 +1,6 @@
 # Plan: UI/UX Overhaul & Integration Testing
 
-## Phase 1: Design System & Shared Components [checkpoint: bd3abf7]
+## Phase 1: Design System & Shared Components [checkpoint: 284932e]
 
 - [x] Task: Define vibrant color palette and typography in `themes.css` [5115c2b]
 - [x] Task: Update base UI components (Buttons, Inputs, Cards) to the new playful style [7043279]
@@ -9,7 +9,11 @@
 
 ## Phase 2: Core Page Redesign
 
-- [~] Task: Redesign Dashboard layout and activity feed
+- [~] Task: Redesign Dashboard layout and activity feed [284932e]
+- [ ] Task: Redesign Profile and Profile Settings pages
+- [ ] Task: Redesign Match discovery and request interface
+- [ ] Task: Redesign Chat and Video Call UI
+- [ ] Task: Conductor - User Manual Verification 'Core Page Redesign' (Protocol in workflow.md)
 - [ ] Task: Redesign Profile and Profile Settings pages
 - [ ] Task: Redesign Match discovery and request interface
 - [ ] Task: Redesign Chat and Video Call UI
