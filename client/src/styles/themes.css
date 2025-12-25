@@ -38,8 +38,8 @@
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 2. Vibrant & Playful Theme (Default) */
-:root, .theme-vibrant {
+/* 2. Vibrant & Playful Theme */
+.theme-vibrant {
   /* Vibrant Palette */
   --color-primary: #FF6B6B; /* Coral Red */
   --color-secondary: #4ECDC4; /* Bright Teal */
@@ -81,72 +81,72 @@
   --gradient-success: linear-gradient(135deg, var(--color-secondary) 0%, #2ECC71 100%);
 }
 
-/* 3. Modern & Clean Theme */
-.theme-modern {
-  /* Modern Palette */
-  --color-primary: #3B82F6; /* Blue 500 */
-  --color-secondary: #10B981; /* Emerald 500 */
-  --color-accent: #F59E0B; /* Amber 500 */
-  --color-dark: #1F2937; /* Slate 800 */
-  --color-light: #F9FAFB; /* Gray 50 */
+/* 3. Modern & Minimalist Theme (Default) */
+:root, .theme-modern {
+  /* Minimalist Grayscale Palette */
+  --color-primary: #000000; /* Pure Black */
+  --color-secondary: #374151; /* Slate 700 */
+  --color-accent: #6B7280; /* Gray 500 */
+  --color-dark: #000000;
+  --color-light: #FFFFFF;
 
   /* Semantic Mappings */
-  --bg-primary: var(--color-light);
-  --bg-secondary: #FFFFFF;
-  --bg-tertiary: #F3F4F6;
+  --bg-primary: #FFFFFF; /* Pure White */
+  --bg-secondary: #F9FAFB; /* Gray 50 */
+  --bg-tertiary: #F3F4F6; /* Gray 100 */
   --bg-elevated: #FFFFFF;
-  --bg-overlay: rgba(31, 41, 55, 0.7);
+  --bg-overlay: rgba(0, 0, 0, 0.7);
 
-  /* Text Colors */
-  --text-primary: var(--color-dark);
-  --text-secondary: #4B5563; /* Gray 600 */
-  --text-muted: #9CA3AF; /* Gray 400 */
+  /* Text Colors (Prioritize Readability) */
+  --text-primary: #000000; /* High Contrast Black */
+  --text-secondary: #1F2937; /* Slate 800 */
+  --text-muted: #4B5563; /* Gray 600 */
   --text-inverse: #FFFFFF;
 
   /* Borders */
-  --border-color: #E5E7EB;
-  --border-focus: var(--color-primary);
+  --border-color: #E5E7EB; /* Gray 200 */
+  --border-focus: #000000;
   --border-width: 1px;
 
-  /* Radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  /* Radius (Cleaner lines) */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
   --radius-pill: 9999px;
 
-  /* Shadows */
+  /* Shadows (Subtle) */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-  --gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  /* Gradients (Minimal) */
+  --gradient-primary: linear-gradient(135deg, #000000 0%, #1F2937 100%);
+  --gradient-success: linear-gradient(135deg, #374151 0%, #111827 100%);
 }
 
-/* 4. Dark Mode (Overlay for any theme, or separate theme) */
+/* 4. Dark Mode (Minimalist) */
 .theme-dark, .dark-theme {
-  --bg-primary: #111827; /* Gray 900 */
-  --bg-secondary: #1F2937; /* Gray 800 */
-  --bg-tertiary: #374151; /* Gray 700 */
-  --bg-elevated: #1F2937;
+  --bg-primary: #000000; /* Pure Black */
+  --bg-secondary: #111827; /* Gray 900 */
+  --bg-tertiary: #1F2937; /* Gray 800 */
+  --bg-elevated: #111827;
   
-  --text-primary: #F9FAFB;
-  --text-secondary: #D1D5DB;
-  --text-muted: #6B7280;
-  --text-inverse: #111827;
+  --text-primary: #FFFFFF; /* High Contrast White */
+  --text-secondary: #E5E7EB; /* Gray 200 */
+  --text-muted: #9CA3AF; /* Gray 400 */
+  --text-inverse: #000000;
 
-  --border-color: #374151;
-  --border-focus: var(--color-primary);
+  --border-color: #374151; /* Gray 700 */
+  --border-focus: #FFFFFF;
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.9);
   
-  --bg-overlay: rgba(0, 0, 0, 0.8);
+  --bg-overlay: rgba(0, 0, 0, 0.85);
 }
 
-/* Legacy mappings to prevent immediate breakage if some files still use them */
+/* Legacy mappings */
 :root {
   --color-vibrant-primary: var(--color-primary);
   --color-vibrant-secondary: var(--color-secondary);

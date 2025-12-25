@@ -13,7 +13,7 @@ export const useTheme = () => {
 export const ThemeProvider = ({ children }) => {
   // Current supported themes: 'vibrant', 'modern'
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'vibrant';
+    return localStorage.getItem('theme') || 'modern';
   });
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
