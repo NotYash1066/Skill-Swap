@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FiStar } from 'react-icons/fi';
+import { FiStar, FiX } from 'react-icons/fi';
 import { API_ENDPOINTS } from '../config/api';
+import { Button, Card, Spinner } from './common';
 import '../styles/UserProfile.css';
 
 const UserProfile = ({ userId, onClose }) => {
@@ -40,13 +41,30 @@ const UserProfile = ({ userId, onClose }) => {
     }
   };
 
-  if (loading) return <div className="loading">Loading profile...</div>;
-  if (!user) return <div>User not found</div>;
+  if (loading) return (
+    <div className="user-profile-modal">
+      <div className="loading-container">
+        <Spinner />
+        <p>Loading profile...</p>
+      </div>
+    </div>
+  );
+
+  if (!user) return (
+    <div className="user-profile-modal" onClick={onClose}>
+      <Card className="error-card">
+        <p>User not found</p>
+        <Button onClick={onClose}>Close</Button>
+      </Card>
+    </div>
+  );
 
   return (
     <div className="user-profile-modal" onClick={onClose}>
-      <div className="user-profile-content" onClick={e => e.stopPropagation()}>
-        <button className="close-btn" onClick={onClose}>×</button>
+      <Card className="user-profile-content" onClick={e => e.stopPropagation()}>
+        <button className="close-btn" onClick={onClose} aria-label="Close profile">
+          <FiX size={24} />
+        </button>
         
         <div className="profile-header">
           {user.avatar ? (
@@ -56,77 +74,85 @@ const UserProfile = ({ userId, onClose }) => {
           )}
           <h2>{user.username}</h2>
           <div className="rating">
-            <FiStar fill="#ffd700" color="#ffd700" />
+            <FiStar fill="var(--color-accent)" color="var(--color-accent)" />
             <span>{user.rating?.toFixed(1) || '0.0'} ({user.reviewCount || 0} reviews)</span>
           </div>
         </div>
 
-        <div className="profile-section">
-          <h3>Bio</h3>
-          <p>{user.bio || 'No bio available'}</p>
-        </div>
-
-        {user.location?.city && (
+        <div className="profile-grid">
           <div className="profile-section">
-            <h3>Location</h3>
-            <p>{user.location.city}{user.location.country ? `, ${user.location.country}` : ''}</p>
+            <h3>Bio</h3>
+            <p className="bio-text">{user.bio || 'No bio available'}</p>
           </div>
-        )}
 
-        {user.availability?.length > 0 && (
+          {user.location?.city && (
+            <div className="profile-section">
+              <h3>Location</h3>
+              <p>{user.location.city}{user.location.country ? `, ${user.location.country}` : ''}</p>
+            </div>
+          )}
+
+          {user.availability?.length > 0 && (
+            <div className="profile-section">
+              <h3>Availability</h3>
+              <div className="availability-tags">
+                {user.availability.map(slot => (
+                  <span key={slot} className="tag">{slot.replace('_', ' ')}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="profile-section">
-            <h3>Availability</h3>
-            <div className="availability-tags">
-              {user.availability.map(slot => (
-                <span key={slot} className="tag">{slot.replace('_', ' ')}</span>
+            <h3>Skills Offered</h3>
+            <div className="skills-list">
+              {user.skillsOffered?.map(skill => (
+                <span key={skill} className="skill-tag offered">
+                  {skill}
+                  {user.proficiency?.[skill] && <small> ({user.proficiency[skill]})</small>}
+                </span>
               ))}
             </div>
           </div>
-        )}
 
-        <div className="profile-section">
-          <h3>Skills Offered</h3>
-          <div className="skills-list">
-            {user.skillsOffered?.map(skill => (
-              <span key={skill} className="skill-tag offered">
-                {skill}
-                {user.proficiency?.[skill] && <small> ({user.proficiency[skill]})</small>}
-              </span>
-            ))}
+          <div className="profile-section">
+            <h3>Skills Sought</h3>
+            <div className="skills-list">
+              {user.skillsSought?.map(skill => (
+                <span key={skill} className="skill-tag sought">{skill}</span>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="profile-section">
-          <h3>Skills Sought</h3>
-          <div className="skills-list">
-            {user.skillsSought?.map(skill => (
-              <span key={skill} className="skill-tag sought">{skill}</span>
-            ))}
-          </div>
-        </div>
-
-        <div className="profile-section">
-          <h3>Reviews</h3>
-          {reviews.length === 0 ? (
-            <p>No reviews yet</p>
-          ) : (
-            reviews.map(review => (
-              <div key={review._id} className="review-item">
-                <div className="review-header">
-                  <strong>{review.reviewer.username}</strong>
-                  <div className="review-rating">
-                    {[...Array(5)].map((_, i) => (
-                      <FiStar key={i} fill={i < review.rating ? '#ffd700' : 'none'} color="#ffd700" size={14} />
-                    ))}
+        <div className="profile-section reviews-section">
+          <h3>Recent Reviews</h3>
+          <div className="reviews-container">
+            {reviews.length === 0 ? (
+              <p className="no-reviews">No reviews yet</p>
+            ) : (
+              reviews.map(review => (
+                <div key={review._id} className="review-item">
+                  <div className="review-header">
+                    <strong>{review.reviewer.username}</strong>
+                    <div className="review-rating">
+                      {[...Array(5)].map((_, i) => (
+                        <FiStar key={i} fill={i < review.rating ? 'var(--color-accent)' : 'none'} color="var(--color-accent)" size={14} />
+                      ))}
+                    </div>
                   </div>
+                  <p>{review.comment}</p>
+                  <small>{new Date(review.createdAt).toLocaleDateString()}</small>
                 </div>
-                <p>{review.comment}</p>
-                <small>{new Date(review.createdAt).toLocaleDateString()}</small>
-              </div>
-            ))
-          )}
+              ))
+            )}
+          </div>
         </div>
-      </div>
+
+        <div className="profile-footer">
+          <Button onClick={onClose}>Close</Button>
+        </div>
+      </Card>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FiFilter } from 'react-icons/fi';
+import { Button, Input, Card } from './common';
 import '../styles/AdvancedSearch.css';
 
 const AdvancedSearch = ({ onSearch }) => {
@@ -38,40 +39,46 @@ const AdvancedSearch = ({ onSearch }) => {
 
   return (
     <div className="advanced-search">
-      <button className="filter-btn" onClick={() => setShowFilters(!showFilters)}>
+      <Button 
+        variant="secondary" 
+        className="filter-btn" 
+        onClick={() => setShowFilters(!showFilters)}
+      >
         <FiFilter /> Advanced Filters
-      </button>
+      </Button>
 
       {showFilters && (
-        <div className="filter-panel">
-          <div className="filter-group">
-            <label>City</label>
-            <input
-              type="text"
-              value={filters.city}
-              onChange={(e) => setFilters({ ...filters, city: e.target.value })}
-              placeholder="Enter city"
-            />
-          </div>
+        <Card className="filter-panel" title="Search Filters">
+          <div className="filter-grid">
+            <div className="filter-group">
+              <label>City</label>
+              <Input
+                type="text"
+                value={filters.city}
+                onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+                placeholder="Enter city"
+              />
+            </div>
 
-          <div className="filter-group">
-            <label>Country</label>
-            <input
-              type="text"
-              value={filters.country}
-              onChange={(e) => setFilters({ ...filters, country: e.target.value })}
-              placeholder="Enter country"
-            />
-          </div>
+            <div className="filter-group">
+              <label>Country</label>
+              <Input
+                type="text"
+                value={filters.country}
+                onChange={(e) => setFilters({ ...filters, country: e.target.value })}
+                placeholder="Enter country"
+              />
+            </div>
 
-          <div className="filter-group">
-            <label>Minimum Rating</label>
-            <select value={filters.minRating} onChange={(e) => setFilters({ ...filters, minRating: e.target.value })}>
-              <option value="0">Any</option>
-              <option value="3">3+ Stars</option>
-              <option value="4">4+ Stars</option>
-              <option value="4.5">4.5+ Stars</option>
-            </select>
+            <div className="filter-group">
+              <label>Minimum Rating</label>
+              <select value={filters.minRating} onChange={(e) => setFilters({ ...filters, minRating: e.target.value })}>
+                <option value="0">Any</option>
+                <option value="3">3+ Stars</option>
+                <option value="4">4+ Stars</option>
+                <option value="4.5">4.5+ Stars</option>
+              </select>
+            </div>
           </div>
 
           <div className="filter-group">
@@ -84,17 +91,17 @@ const AdvancedSearch = ({ onSearch }) => {
                     checked={filters.availability.includes(option)}
                     onChange={() => handleAvailabilityToggle(option)}
                   />
-                  {option.replace('_', ' ')}
+                  <span>{option.replace('_', ' ')}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div className="filter-actions">
-            <button className="btn-secondary" onClick={handleReset}>Reset</button>
-            <button className="btn-primary" onClick={handleSearch}>Apply Filters</button>
+            <Button variant="secondary" onClick={handleReset}>Reset</Button>
+            <Button variant="primary" onClick={handleSearch}>Apply Filters</Button>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   );
