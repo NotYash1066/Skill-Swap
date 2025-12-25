@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Button, Input, Card } from './index';
+import { Button, Input, Card, Spinner } from './index';
 
 describe('Common UI Components', () => {
   describe('Button', () => {
@@ -16,6 +16,12 @@ describe('Common UI Components', () => {
       render(<Button variant="secondary">Secondary</Button>);
       const btn = screen.getByRole('button', { name: /secondary/i });
       expect(btn).toHaveClass('btn-secondary');
+    });
+
+    it('renders with gradient variant', () => {
+      render(<Button variant="gradient">Gradient</Button>);
+      const btn = screen.getByRole('button', { name: /gradient/i });
+      expect(btn).toHaveClass('btn-gradient');
     });
 
     it('handles click events', () => {
@@ -46,6 +52,13 @@ describe('Common UI Components', () => {
       render(<Card title="Card Title">Content</Card>);
       expect(screen.getByText('Card Title')).toBeInTheDocument();
       expect(screen.getByText('Card Title')).toHaveClass('card-title');
+    });
+  });
+
+  describe('Spinner', () => {
+    it('renders spinner element', () => {
+      const { container } = render(<Spinner />);
+      expect(container.firstChild).toHaveClass('spinner');
     });
   });
 });

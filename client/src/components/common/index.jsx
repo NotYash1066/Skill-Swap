@@ -55,3 +55,13 @@ Card.propTypes = {
   className: PropTypes.string,
   title: PropTypes.string
 };
+
+export const Spinner = ({ className = '', ...props }) => {
+  return (
+    <div className={`spinner ${className}`} {...props}></div>
+  );
+};
+
+Spinner.propTypes = {
+  className: PropTypes.string
+};
