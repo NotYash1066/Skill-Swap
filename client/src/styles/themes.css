@@ -1,76 +1,174 @@
-/* Vibrant & Playful Theme */
+/* Global Theme System */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap');
 
+/* 1. Base / Shared Variables */
 :root {
+  /* Typography */
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+  
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 2rem;
+  --font-size-4xl: 2.5rem;
+
+  /* Weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extra-bold: 800;
+
+  /* Transition */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 2. Vibrant & Playful Theme (Default) */
+:root, .theme-vibrant {
   /* Vibrant Palette */
-  --color-vibrant-primary: #FF6B6B; /* Coral Red */
-  --color-vibrant-secondary: #4ECDC4; /* Bright Teal */
-  --color-vibrant-accent: #FFE66D; /* Sunny Yellow */
-  --color-vibrant-dark: #292F36; /* Dark Gunmetal */
-  --color-vibrant-light: #F7FFF7; /* Mint White */
+  --color-primary: #FF6B6B; /* Coral Red */
+  --color-secondary: #4ECDC4; /* Bright Teal */
+  --color-accent: #FFE66D; /* Sunny Yellow */
+  --color-dark: #292F36; /* Dark Gunmetal */
+  --color-light: #F7FFF7; /* Mint White */
   
   /* Semantic Mappings */
-  --bg-primary: var(--color-vibrant-light);
+  --bg-primary: var(--color-light);
   --bg-secondary: #FFFFFF;
   --bg-tertiary: #E8F7F6;
   --bg-elevated: #FFFFFF;
   --bg-overlay: rgba(41, 47, 54, 0.8);
 
   /* Text Colors */
-  --text-primary: var(--color-vibrant-dark);
+  --text-primary: var(--color-dark);
   --text-secondary: #57606f;
   --text-muted: #95a5a6;
   --text-inverse: #FFFFFF;
   
   /* Borders */
   --border-color: #d1d8e0;
-  --border-focus: var(--color-vibrant-secondary);
-  --border-width-bold: 3px;
+  --border-focus: var(--color-secondary);
+  --border-width: 3px;
   
-  /* Typography */
-  --font-display: 'Poppins', sans-serif;
-  --font-body: 'Nunito', sans-serif;
-  
-  /* Playful Shadows & Borders */
-  --shadow-playful: 4px 4px 0px 0px rgba(41, 47, 54, 0.1);
-  --shadow-playful-hover: 6px 6px 0px 0px rgba(41, 47, 54, 0.15);
-  --shadow-card: 0 4px 12px rgba(0,0,0,0.05);
-  
-  /* Spacing & Radius */
+  /* Radius */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 20px;
   --radius-pill: 50px;
   
+  /* Shadows */
+  --shadow-sm: 2px 2px 0px 0px rgba(41, 47, 54, 0.1);
+  --shadow-md: 4px 4px 0px 0px rgba(41, 47, 54, 0.1);
+  --shadow-lg: 6px 6px 0px 0px rgba(41, 47, 54, 0.15);
+  
   /* Gradients */
-  --gradient-fun: linear-gradient(135deg, var(--color-vibrant-primary) 0%, #FF8E53 100%);
-  --gradient-cool: linear-gradient(135deg, var(--color-vibrant-secondary) 0%, #2ECC71 100%);
+  --gradient-primary: linear-gradient(135deg, var(--color-primary) 0%, #FF8E53 100%);
+  --gradient-success: linear-gradient(135deg, var(--color-secondary) 0%, #2ECC71 100%);
 }
 
-.dark-theme {
-  /* Vibrant Dark Mode */
-  --bg-primary: #1A1A1A;
-  --bg-secondary: #2D2D2D;
-  --bg-tertiary: #333333;
-  --bg-elevated: #404040;
+/* 3. Modern & Clean Theme */
+.theme-modern {
+  /* Modern Palette */
+  --color-primary: #3B82F6; /* Blue 500 */
+  --color-secondary: #10B981; /* Emerald 500 */
+  --color-accent: #F59E0B; /* Amber 500 */
+  --color-dark: #1F2937; /* Slate 800 */
+  --color-light: #F9FAFB; /* Gray 50 */
+
+  /* Semantic Mappings */
+  --bg-primary: var(--color-light);
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F3F4F6;
+  --bg-elevated: #FFFFFF;
+  --bg-overlay: rgba(31, 41, 55, 0.7);
+
+  /* Text Colors */
+  --text-primary: var(--color-dark);
+  --text-secondary: #4B5563; /* Gray 600 */
+  --text-muted: #9CA3AF; /* Gray 400 */
+  --text-inverse: #FFFFFF;
+
+  /* Borders */
+  --border-color: #E5E7EB;
+  --border-focus: var(--color-primary);
+  --border-width: 1px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  --gradient-success: linear-gradient(135deg, #10B981 0%, #059669 100%);
+}
+
+/* 4. Dark Mode (Overlay for any theme, or separate theme) */
+.theme-dark, .dark-theme {
+  --bg-primary: #111827; /* Gray 900 */
+  --bg-secondary: #1F2937; /* Gray 800 */
+  --bg-tertiary: #374151; /* Gray 700 */
+  --bg-elevated: #1F2937;
   
-  --text-primary: #FFFFFF;
-  --text-secondary: #CCCCCC;
-  --text-inverse: var(--color-vibrant-dark);
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-muted: #6B7280;
+  --text-inverse: #111827;
+
+  --border-color: #374151;
+  --border-focus: var(--color-primary);
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
   
-  --shadow-playful: 4px 4px 0px 0px rgba(0, 0, 0, 0.3);
-  --shadow-playful-hover: 6px 6px 0px 0px rgba(0, 0, 0, 0.5);
+  --bg-overlay: rgba(0, 0, 0, 0.8);
+}
+
+/* Legacy mappings to prevent immediate breakage if some files still use them */
+:root {
+  --color-vibrant-primary: var(--color-primary);
+  --color-vibrant-secondary: var(--color-secondary);
+  --color-vibrant-accent: var(--color-accent);
+  --color-vibrant-dark: var(--color-dark);
+  --color-vibrant-light: var(--color-light);
+  --shadow-playful: var(--shadow-md);
+  --shadow-playful-hover: var(--shadow-lg);
+  --border-width-bold: var(--border-width);
+  --gradient-fun: var(--gradient-primary);
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-body);
-  transition: all 0.3s ease;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  min-height: 100vh;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: var(--font-weight-extra-bold);
   letter-spacing: -0.5px;
 }

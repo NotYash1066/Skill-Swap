@@ -11,30 +11,50 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
+  // Current supported themes: 'vibrant', 'modern'
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'vibrant';
+  });
+
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
   });
 
   useEffect(() => {
+    localStorage.setItem('theme', theme);
     localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
     
-    // Apply theme to document root
+    // Apply theme and dark mode to document root
+    const root = document.documentElement;
+    
+    // Remove all theme classes
+    root.classList.remove('theme-vibrant', 'theme-modern', 'theme-dark', 'dark-theme');
+    
+    // Add current theme class
+    root.classList.add(`theme-${theme}`);
+    
+    // Add dark mode class if enabled
     if (isDarkMode) {
-      document.documentElement.classList.add('dark-theme');
-    } else {
-      document.documentElement.classList.remove('dark-theme');
+      root.classList.add('theme-dark');
+      root.classList.add('dark-theme');
     }
-  }, [isDarkMode]);
+  }, [theme, isDarkMode]);
 
-  const toggleTheme = () => {
+  const toggleDarkMode = () => {
     setIsDarkMode(prev => !prev);
   };
 
+  const cycleTheme = () => {
+    setTheme(prev => (prev === 'vibrant' ? 'modern' : 'vibrant'));
+  };
+
   const value = {
+    theme,
+    setTheme,
     isDarkMode,
-    toggleTheme,
-    theme: isDarkMode ? 'dark' : 'light'
+    toggleDarkMode,
+    cycleTheme
   };
 
   return (
