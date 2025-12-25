@@ -11,8 +11,9 @@
 
 - [x] Task: Redesign Dashboard layout and activity feed [284932e]
 - [x] Task: Redesign Profile and Profile Settings pages [479cec2]
-- [~] Task: Redesign Match discovery and request interface
-- [ ] Task: Redesign Chat and Video Call UI
+- [x] Task: Redesign Match discovery and request interface [87646dc]
+- [~] Task: Redesign Chat and Video Call UI
+- [ ] Task: Conductor - User Manual Verification 'Core Page Redesign' (Protocol in workflow.md)
 - [ ] Task: Conductor - User Manual Verification 'Core Page Redesign' (Protocol in workflow.md)
 - [ ] Task: Redesign Profile and Profile Settings pages
 - [ ] Task: Redesign Match discovery and request interface
