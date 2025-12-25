@@ -5,7 +5,8 @@ import { API_ENDPOINTS } from '../config/api';
 import ThemeToggle from '../components/ThemeToggle';
 import AdvancedSearch from '../components/AdvancedSearch';
 import UserProfile from '../components/UserProfile';
-import { FiStar } from 'react-icons/fi';
+import { FiStar, FiMapPin, FiMessageSquare } from 'react-icons/fi';
+import { Button, Card, Spinner } from '../components/common';
 import '../styles/Matches.css';
 
 const Matches = () => {
@@ -42,10 +43,6 @@ const Matches = () => {
         axios.get(API_ENDPOINTS.MATCHES.SENT, { headers })
       ]);
 
-      console.log('Potential matches:', potentialRes.data);
-      console.log('Received requests:', receivedRes.data);
-      console.log('Sent requests:', sentRes.data);
-
       setPotentialMatches(potentialRes.data);
       setReceivedRequests(receivedRes.data);
       setSentRequests(sentRes.data);
@@ -66,7 +63,7 @@ const Matches = () => {
     try {
       setSending(true);
       const token = localStorage.getItem('token');
-      const response = await axios.post(API_ENDPOINTS.MATCHES.REQUEST, {
+      await axios.post(API_ENDPOINTS.MATCHES.REQUEST, {
         recipientId,
         message: matchMessage,
         matchedSkills
@@ -74,18 +71,12 @@ const Matches = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      console.log('Match request sent successfully:', response.data);
       setSelectedMatch(null);
       setMatchMessage('');
-      await fetchData(); // Refresh data
+      await fetchData();
     } catch (err) {
       console.error('Error sending match request:', err);
-      const serverMsg = err.response?.data?.msg
-        || err.response?.data?.errors?.[0]
-        || err.response?.data?.message
-        || err.message
-        || 'Failed to send request. Please try again.';
-      alert(`Error: ${serverMsg}`);
+      alert('Failed to send request. Please try again.');
     } finally {
       setSending(false);
     }
@@ -100,7 +91,7 @@ const Matches = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      fetchData(); // Refresh data
+      fetchData();
     } catch (err) {
       console.error('Error responding to match:', err);
     }
@@ -110,50 +101,47 @@ const Matches = () => {
     if (potentialMatches.length === 0) {
       return (
         <div className="no-matches">
-          <h3>No potential matches found</h3>
-          <p>Try adding more skills to your profile to find better matches!</p>
+          <h3>No matches found</h3>
+          <p>Update your skills or broaden your search.</p>
         </div>
       );
     }
 
     return potentialMatches.map(match => (
-      <div key={match._id} className="match-card">
+      <Card key={match._id} className="match-card">
         <div className="match-header">
-          <h3 onClick={() => setSelectedUserId(match._id)} style={{cursor: 'pointer'}}>{match.username}</h3>
-          <div className="match-info">
+          <h3 onClick={() => setSelectedUserId(match._id)} className="clickable-name">
+            {match.username}
+          </h3>
+          <div className="match-meta">
             {match.rating > 0 && (
               <div className="rating">
-                <FiStar fill="#ffd700" color="#ffd700" size={16} />
+                <FiStar fill="var(--color-accent)" color="var(--color-accent)" size={14} />
                 <span>{match.rating.toFixed(1)}</span>
               </div>
             )}
             <div className="compatibility-score">{match.compatibilityScore}% Match</div>
           </div>
         </div>
+        
         {match.location?.city && (
-          <p className="location">📍 {match.location.city}{match.location.country ? `, ${match.location.country}` : ''}</p>
+          <p className="location"><FiMapPin /> {match.location.city}, {match.location.country}</p>
         )}
         
         <div className="match-skills">
           <div className="skills-section">
-            <h4>Skills they offer (that you want):</h4>
+            <h4>They Offer:</h4>
             <div className="skills-list">
-              {match.skillsOffered.filter(skill => 
-                // Current user's sought skills that match this user's offered skills
-                JSON.parse(localStorage.getItem('user'))?.skillsSought?.includes(skill)
-              ).map(skill => (
+              {match.skillsOffered.map(skill => (
                 <span key={skill} className="skill-tag offered">{skill}</span>
               ))}
             </div>
           </div>
           
           <div className="skills-section">
-            <h4>Skills they want (that you offer):</h4>
+            <h4>They Seek:</h4>
             <div className="skills-list">
-              {match.skillsSought.filter(skill => 
-                // Current user's offered skills that match this user's sought skills
-                JSON.parse(localStorage.getItem('user'))?.skillsOffered?.includes(skill)
-              ).map(skill => (
+              {match.skillsSought.map(skill => (
                 <span key={skill} className="skill-tag sought">{skill}</span>
               ))}
             </div>
@@ -161,14 +149,11 @@ const Matches = () => {
         </div>
 
         <div className="match-actions">
-          <button 
-            className="connect-btn"
-            onClick={() => setSelectedMatch(match)}
-          >
-            Send Connection Request
-          </button>
+          <Button onClick={() => setSelectedMatch(match)}>
+            Connect
+          </Button>
         </div>
-      </div>
+      </Card>
     ));
   };
 
@@ -177,20 +162,20 @@ const Matches = () => {
       return (
         <div className="no-requests">
           <h3>No pending requests</h3>
-          <p>You don't have any connection requests at the moment.</p>
         </div>
       );
     }
 
     return receivedRequests.map(request => (
-      <div key={request._id} className="match-card request-card">
+      <Card key={request._id} className="match-card request-card">
         <div className="match-header">
           <h3>{request.requester.username}</h3>
           <div className="compatibility-score">{request.compatibilityScore}% Match</div>
         </div>
 
         <div className="request-message">
-          <p>"{request.message}"</p>
+          <FiMessageSquare className="msg-icon" />
+          <p>{request.message}</p>
         </div>
 
         <div className="match-skills">
@@ -203,20 +188,14 @@ const Matches = () => {
         </div>
 
         <div className="request-actions">
-          <button 
-            className="accept-btn"
-            onClick={() => respondToMatch(request._id, 'accepted')}
-          >
+          <Button variant="secondary" onClick={() => respondToMatch(request._id, 'accepted')}>
             Accept
-          </button>
-          <button 
-            className="reject-btn"
-            onClick={() => respondToMatch(request._id, 'rejected')}
-          >
+          </Button>
+          <Button variant="outline" onClick={() => respondToMatch(request._id, 'rejected')}>
             Decline
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
     ));
   };
 
@@ -225,91 +204,75 @@ const Matches = () => {
       return (
         <div className="no-requests">
           <h3>No sent requests</h3>
-          <p>You haven't sent any connection requests yet.</p>
         </div>
       );
     }
 
     return sentRequests.map(request => (
-      <div key={request._id} className="match-card sent-card">
+      <Card key={request._id} className="match-card sent-card">
         <div className="match-header">
           <h3>{request.recipient.username}</h3>
           <div className={`status-badge ${request.status}`}>
-            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+            {request.status}
           </div>
         </div>
 
         <div className="request-message">
-          <p>"{request.message}"</p>
-        </div>
-
-        <div className="match-skills">
-          <h4>Matched Skills:</h4>
-          <div className="skills-list">
-            {request.matchedSkills.map(skill => (
-              <span key={skill} className="skill-tag matched">{skill}</span>
-            ))}
-          </div>
+          <p>{request.message}</p>
         </div>
 
         {request.status === 'accepted' && (
           <div className="request-actions">
-            <button 
-              className="chat-btn"
-              onClick={() => navigate('/chat')}
-            >
-              Start Chatting
-            </button>
+            <Button onClick={() => navigate('/chat')}>
+              Message
+            </Button>
           </div>
         )}
-      </div>
+      </Card>
     ));
   };
 
-  if (loading) {
-    return (
-      <div className="matches-container">
-        <div className="loading">Loading matches...</div>
-      </div>
-    );
-  }
+  if (loading) return <div className="loading-screen"><Spinner /><p>Finding matches...</p></div>;
 
   return (
     <div className="matches-container">
-      <div className="matches-header">
-        <div className="header-top">
-          <Link to="/dashboard" className="back-btn">
-            ← Back to Dashboard
-          </Link>
-          <Link to="/profile-settings" className="back-btn">
-            Profile Settings
-          </Link>
-          <ThemeToggle />
+      <header className="matches-top-nav">
+        <div className="nav-left">
+          <Link to="/dashboard" className="logo">SkillSwap</Link>
         </div>
-        <h1>Find Your Perfect Match</h1>
-        <p>Connect with people who have the skills you need and want to learn what you offer</p>
-        <AdvancedSearch onSearch={setFilters} />
-      </div>
+        <div className="nav-right">
+          <ThemeToggle />
+          <Button variant="secondary" size="sm" onClick={() => navigate('/dashboard')}>Dashboard</Button>
+        </div>
+      </header>
 
-      <div className="matches-content">
+      <section className="matches-hero">
+        <div className="container">
+          <h1>Discovery</h1>
+          <p>Find partners to exchange knowledge with.</p>
+          <AdvancedSearch onSearch={setFilters} />
+        </div>
+      </section>
+
+      <main className="matches-content container">
         <div className="match-tabs">
           <button 
-            className={`tab-button ${activeTab === 'discover' ? 'active' : ''}`}
+            className={`tab-btn ${activeTab === 'discover' ? 'active' : ''}`}
             onClick={() => setActiveTab('discover')}
           >
-            Discover ({potentialMatches.length})
+            Discover <span>{potentialMatches.length}</span>
           </button>
           <button 
-            className={`tab-button ${activeTab === 'received' ? 'active' : ''}`}
+            className={`tab-btn ${activeTab === 'received' ? 'active' : ''}`}
             onClick={() => setActiveTab('received')}
           >
-            Requests ({receivedRequests.length})
+            Requests <span>{receivedRequests.length}</span>
           </button>
           <button 
-            className={`tab-button ${activeTab === 'sent' ? 'active' : ''}`}
+            className={`tab-btn ${activeTab === 'sent' ? 'active' : ''}`}
             onClick={() => setActiveTab('sent')}
           >
-            Sent ({sentRequests.length})
+            Sent <span>{sentRequests.length}</span>
           </button>
         </div>
 
@@ -318,51 +281,41 @@ const Matches = () => {
           {activeTab === 'received' && renderReceivedRequests()}
           {activeTab === 'sent' && renderSentRequests()}
         </div>
-      </div>
+      </main>
 
-      {/* Connection Request Modal */}
       {selectedMatch && (
         <div className="modal-overlay" onClick={() => setSelectedMatch(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h3>Send Connection Request to {selectedMatch.username}</h3>
-            
+          <Card className="modal-content" onClick={e => e.stopPropagation()} title={`Connect with ${selectedMatch.username}`}>
             <div className="modal-skills">
-              <h4>You'll be connecting based on these skills:</h4>
+              <h4>Skills to Exchange:</h4>
               <div className="skills-list">
-                {selectedMatch.matchedSkills.map(skill => (
+                {selectedMatch.matchedSkills?.map(skill => (
                   <span key={skill} className="skill-tag matched">{skill}</span>
                 ))}
               </div>
             </div>
 
             <div className="modal-form">
-              <label>Personal Message:</label>
+              <label>Add a Message:</label>
               <textarea
                 value={matchMessage}
                 onChange={(e) => setMatchMessage(e.target.value)}
-                placeholder="Introduce yourself and explain why you'd like to connect..."
+                placeholder="Hi! I'd love to learn..."
                 rows={4}
-                maxLength={500}
+                className="input"
               />
-              <small>{matchMessage.length}/500 characters</small>
             </div>
 
             <div className="modal-actions">
-              <button 
-                className="cancel-btn"
-                onClick={() => setSelectedMatch(null)}
-              >
-                Cancel
-              </button>
-              <button 
-                className="send-btn"
+              <Button variant="secondary" onClick={() => setSelectedMatch(null)}>Cancel</Button>
+              <Button 
                 onClick={() => sendMatchRequest(selectedMatch._id, selectedMatch.matchedSkills)}
                 disabled={sending || !matchMessage.trim()}
               >
                 {sending ? 'Sending...' : 'Send Request'}
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
