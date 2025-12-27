@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Match = require('../models/Match');
 const ChatRoom = require('../models/ChatRoom');
 const jwt = require('jsonwebtoken');
+const dbHelper = require('./db_helper');
 
 describe('Match Flow', () => {
   let user1, user2;
@@ -12,17 +13,15 @@ describe('Match Flow', () => {
   let u1Id, u2Id;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/SkillSwapTestDB');
-  }, 30000);
+    await dbHelper.connect();
+  });
 
   afterAll(async () => {
-    await mongoose.connection.close();
+    await dbHelper.close();
   });
 
   beforeEach(async () => {
-    await User.deleteMany({});
-    await Match.deleteMany({});
-    await ChatRoom.deleteMany({});
+    await dbHelper.clear();
 
     // Create User 1
     user1 = await User.create({
@@ -45,7 +44,7 @@ describe('Match Flow', () => {
     });
     u2Id = user2._id;
     token2 = jwt.sign({ user: { id: u2Id } }, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
-  }, 15000);
+  });
 
   describe('POST /api/matches/request', () => {
     it('should create a match request', async () => {

@@ -41,7 +41,6 @@ ChatRoomSchema.pre('save', function(next) {
 
 // Index for efficient queries
 ChatRoomSchema.index({ participants: 1 });
-ChatRoomSchema.index({ match: 1 }, { unique: true });
 ChatRoomSchema.index({ participants: 1, isActive: 1 });
 ChatRoomSchema.index({ lastActivity: -1 });
 

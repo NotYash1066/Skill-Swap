@@ -4,22 +4,22 @@ const app = require('../testApp');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const jwt = require('jsonwebtoken');
+const dbHelper = require('./db_helper');
 
 describe('Notification Routes', () => {
   let token;
   let userId;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/SkillSwapTestDB');
-  }, 30000);
+    await dbHelper.connect();
+  });
 
   afterAll(async () => {
-    await mongoose.connection.close();
+    await dbHelper.close();
   });
 
   beforeEach(async () => {
-    await User.deleteMany({});
-    await Notification.deleteMany({});
+    await dbHelper.clear();
 
     // Create user and token
     const user = await User.create({
@@ -31,7 +31,7 @@ describe('Notification Routes', () => {
     
     const payload = { user: { id: user.id } };
     token = jwt.sign(payload, process.env.JWT_SECRET || 'secret', { expiresIn: '1h' });
-  }, 15000);
+  });
 
   describe('GET /api/notifications', () => {
     it('should get user notifications', async () => {
