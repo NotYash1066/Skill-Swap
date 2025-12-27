@@ -14,11 +14,11 @@
 - [x] Task: Conductor - User Manual Verification 'Client ESLint 9 Migration' (Protocol in workflow.md) [checkpoint]
 
 ## Phase 3: Server ESLint 9 Migration
-- [ ] Task: Identify the current ESLint configuration in the `server` directory (e.g., `.eslintrc.json`).
-- [ ] Task: Upgrade `eslint` and associated plugins in `server/package.json` to version 9.x.
-- [ ] Task: Migrate the `server` configuration to a new `server/eslint.config.js` (Flat Config format).
-- [ ] Task: Run the lint command in `server` and verify it passes.
-- [ ] Task: Conductor - User Manual Verification 'Server ESLint 9 Migration' (Protocol in workflow.md)
+- [x] Task: Identify the current ESLint configuration in the `server` directory (e.g., `.eslintrc.json`).
+- [x] Task: Upgrade `eslint` and associated plugins in `server/package.json` to version 9.x. [7dc5f20]
+- [x] Task: Migrate the `server` configuration to a new `server/eslint.config.js` (Flat Config format). [7dc5f20]
+- [x] Task: Run the lint command in `server` and verify it passes. [7dc5f20]
+- [x] Task: Conductor - User Manual Verification 'Server ESLint 9 Migration' (Protocol in workflow.md) [checkpoint]
 
 ## Phase 4: Project-Wide Verification and CI Alignment
 - [ ] Task: Review `.github/workflows/main.yml` and `.github/workflows/ci-cd.yml` to ensure the linting steps are correctly configured for the new ESLint 9 execution.
