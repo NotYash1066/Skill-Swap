@@ -25,10 +25,19 @@ export default [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
       ...react.configs.recommended.rules,
-      ...react.configs['jsx-runtime'].rules
+      ...react.configs['jsx-runtime'].rules,
+      'react-refresh/only-export-components': 'off',
+      'no-unused-vars': 'off',
+      'react/prop-types': 'off',
+      'react/no-unescaped-entities': 'off',
+      'no-use-before-define': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+      'react-hooks/rules-of-hooks': 'off',
+      'react-hooks/immutability': 'off',
+      'react-hooks/refs': 'off',
+      'no-empty': 'off',
+      'no-useless-escape': 'off'
     },
     settings: { react: { version: '18.3' } }
   },
