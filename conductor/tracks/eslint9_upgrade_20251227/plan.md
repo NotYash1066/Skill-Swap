@@ -6,10 +6,11 @@
 - [~] Task: Conductor - User Manual Verification 'Initialization and Red Phase' (Protocol in workflow.md)
 
 ## Phase 2: Client ESLint 9 Migration
-- [ ] Task: Upgrade `eslint` and all associated plugins/parsers in `client/package.json` to versions compatible with ESLint 9.
-- [ ] Task: Refactor `client/eslint.config.js` to remove internal path imports and ensure compatibility with ESLint 9's Flat Config requirements.
-- [ ] Task: Run `npm run lint` in `client` and verify it passes (Green Phase).
-- [ ] Task: Conductor - User Manual Verification 'Client ESLint 9 Migration' (Protocol in workflow.md)
+- [x] Task: Upgrade `eslint` and all associated plugins/parsers in `client/package.json` to versions compatible with ESLint 9.
+- [x] Task: Refactor `client/eslint.config.js` to remove internal path imports and ensure compatibility with ESLint 9's Flat Config requirements.
+- [x] Task: Verify that the `ERR_PACKAGE_PATH_NOT_EXPORTED` error for `./config` is resolved.
+- [x] Task: Run `npm run lint` in `client` and verify it passes (Green Phase).
+- [~] Task: Conductor - User Manual Verification 'Client ESLint 9 Migration' (Protocol in workflow.md)
 
 ## Phase 3: Server ESLint 9 Migration
 - [ ] Task: Identify the current ESLint configuration in the `server` directory (e.g., `.eslintrc.json`).
