@@ -46,6 +46,9 @@ jobs:
         JWT_SECRET: test_secret
         MONGO_URI: mongodb://localhost:27017/skillswap_test
 
+    - name: Lint Server
+      run: cd server && npm run lint
+
     # Client CI
     - name: Use Node.js ${{ matrix.node-version }} for Client
       uses: actions/setup-node@v3

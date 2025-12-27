@@ -35,6 +35,10 @@ jobs:
         working-directory: ./server
         run: npm ci
       
+      - name: Lint
+        working-directory: ./server
+        run: npm run lint
+      
       - name: Run tests
         working-directory: ./server
         run: npm test
@@ -64,6 +68,10 @@ jobs:
       - name: Install dependencies
         working-directory: ./client
         run: npm ci
+      
+      - name: Lint
+        working-directory: ./client
+        run: npm run lint
       
       - name: Build
         working-directory: ./client
