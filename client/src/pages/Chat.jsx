@@ -36,6 +36,36 @@ const Chat = () => {
   const currentUserId = getCurrentUserId();
   const { socket, sendMessage: socketSendMessage, onNewMessage, onUserTyping, onUserStopTyping, startTyping, stopTyping, offNewMessage, offUserTyping } = useSocket(currentUserId);
   
+  const fetchChatRooms = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(API_ENDPOINTS.CHAT.ROOMS, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setChatRooms(response.data);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching chat rooms:', err);
+      setLoading(false);
+    }
+  };
+
+  const fetchMessages = async (roomId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(API_ENDPOINTS.CHAT.MESSAGES(roomId), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setMessages(response.data);
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   useEffect(() => {
     fetchChatRooms();
   }, []);
@@ -74,32 +104,6 @@ const Chat = () => {
       offUserTyping();
     };
   }, [selectedRoom, onNewMessage, onUserTyping, onUserStopTyping, offNewMessage, offUserTyping]);
-
-  const fetchChatRooms = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(API_ENDPOINTS.CHAT.ROOMS, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setChatRooms(response.data);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching chat rooms:', err);
-      setLoading(false);
-    }
-  };
-
-  const fetchMessages = async (roomId) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(API_ENDPOINTS.CHAT.MESSAGES(roomId), {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setMessages(response.data);
-    } catch (err) {
-      console.error('Error fetching messages:', err);
-    }
-  };
 
   const sendMessage = async (e) => {
     e.preventDefault();
@@ -157,10 +161,6 @@ const Chat = () => {
     }
   };
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   const startVideoCall = async () => {
     if (!selectedRoom) return;
     const otherParticipant = getOtherParticipant(selectedRoom);
@@ -181,7 +181,7 @@ const Chat = () => {
       <div className="chat-container">
         <div className="no-chats">
           <h2>No Active Chats</h2>
-          <p>You don't have any active conversations yet.</p>
+          <p>You don&apos;t have any active conversations yet.</p>
           <Button onClick={() => navigate('/matches')}>
             Find Matches
           </Button>

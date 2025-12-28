@@ -29,17 +29,6 @@ const ProfileSettings = () => {
     { value: 'weekend_evening', label: 'Weekend Evening' }
   ];
 
-  useEffect(() => {
-    fetchUserData();
-    fetchCountries();
-  }, []);
-
-  useEffect(() => {
-    if (formData.country) {
-      fetchCities(formData.country);
-    }
-  }, [formData.country]);
-
   const fetchCountries = async () => {
     try {
       const response = await axios.get('https://countriesnow.space/api/v0.1/countries');
@@ -89,6 +78,17 @@ const ProfileSettings = () => {
       }
     }
   };
+
+  useEffect(() => {
+    fetchUserData();
+    fetchCountries();
+  }, []);
+
+  useEffect(() => {
+    if (formData.country) {
+      fetchCities(formData.country);
+    }
+  }, [formData.country]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -224,7 +224,7 @@ const ProfileSettings = () => {
 
           <div className="form-section">
             <h2>Availability</h2>
-            <p className="section-desc">Select when you're available for sessions</p>
+            <p className="section-desc">Select when you&apos;re available for sessions</p>
             
             <div className="availability-grid">
               {availabilityOptions.map(option => (

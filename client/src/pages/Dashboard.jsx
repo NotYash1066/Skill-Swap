@@ -21,6 +21,36 @@ const Dashboard = () => {
   const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
 
+  const fetchUserData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const response = await axios.get(API_ENDPOINTS.AUTH.ME, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setUser(response.data);
+      setSkillsOffered(response.data.skillsOffered || []);
+      setSkillsSought(response.data.skillsSought || []);
+      setNewBio(response.data.bio || '');
+
+      // Store user data in localStorage for other components
+      localStorage.setItem('user', JSON.stringify(response.data));
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching user data:', err);
+      if (err.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const newSocket = io(API_BASE_URL);
     setSocket(newSocket);
@@ -29,7 +59,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchUserData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Clear messages after a few seconds
   useEffect(() => {
@@ -62,33 +92,28 @@ const Dashboard = () => {
     );
   };
 
-  const fetchUserData = async () => {
+  const updateSkills = async (offered, sought) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
-      
-      const response = await axios.get(API_ENDPOINTS.AUTH.ME, {
+      const response = await axios.put(API_ENDPOINTS.AUTH.SKILLS, { // eslint-disable-line no-unused-vars
+        skillsOffered: offered,
+        skillsSought: sought
+      }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setUser(response.data);
-      setSkillsOffered(response.data.skillsOffered || []);
-      setSkillsSought(response.data.skillsSought || []);
-      setNewBio(response.data.bio || '');
-      
-      // Store user data in localStorage for other components
-      localStorage.setItem('user', JSON.stringify(response.data));
-      setLoading(false);
+      // Update localStorage
+      const updatedUser = { ...user, skillsOffered: offered, skillsSought: sought };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
     } catch (err) {
-      console.error('Error fetching user data:', err);
-      if (err.response?.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/login');
+      console.error('Error updating skills:', err);
+      if (err.response?.data?.errors) {
+        setError(err.response.data.errors[0] || 'Failed to update skills.');
+      } else {
+        setError('Failed to update skills. Please try again.');
       }
-      setLoading(false);
+      throw err; // Re-throw to be caught by calling function
     }
   };
 
@@ -172,31 +197,6 @@ const Dashboard = () => {
     }
   };
 
-  const updateSkills = async (offered, sought) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.put(API_ENDPOINTS.AUTH.SKILLS, {
-        skillsOffered: offered,
-        skillsSought: sought
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      // Update localStorage
-      const updatedUser = { ...user, skillsOffered: offered, skillsSought: sought };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
-    } catch (err) {
-      console.error('Error updating skills:', err);
-      if (err.response?.data?.errors) {
-        setError(err.response.data.errors[0] || 'Failed to update skills.');
-      } else {
-        setError('Failed to update skills. Please try again.');
-      }
-      throw err; // Re-throw to be caught by calling function
-    }
-  };
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -206,7 +206,7 @@ const Dashboard = () => {
   const updateBio = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.put(API_ENDPOINTS.AUTH.PROFILE, {
+      const response = await axios.put(API_ENDPOINTS.AUTH.PROFILE, { // eslint-disable-line no-unused-vars
         bio: newBio.trim()
       }, {
         headers: { Authorization: `Bearer ${token}` }

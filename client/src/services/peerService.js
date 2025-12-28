@@ -215,13 +215,13 @@ class PeerService {
 
   // Handle participant disconnected
   handleParticipantDisconnected(data) {
-    const { userId } = data;
+    const { userId } = data; // eslint-disable-line no-unused-vars
     // Note: We'd need socket ID here, but for now we'll clean up by socket ID
     // This would need enhancement based on your user-socket mapping
   }
 
   // Handle call ended
-  handleCallEnded(data) {
+  handleCallEnded(data) { // eslint-disable-line no-unused-vars
     console.log('Call ended, cleaning up all peers');
     this.cleanup();
   }
@@ -250,7 +250,7 @@ class PeerService {
       const displayStream = await this.getDisplayMedia();
       
       // Replace video track for all peers
-      for (const [socketId, peer] of this.peers.entries()) {
+      for (const [socketId, peer] of this.peers.entries()) { // eslint-disable-line no-unused-vars
         const videoTrack = displayStream.getVideoTracks()[0];
         peer.replaceTrack(this.localStream.getVideoTracks()[0], videoTrack, this.localStream);
       }
@@ -279,7 +279,7 @@ class PeerService {
       const cameraStream = await this.getUserMedia({ video: true, audio: true });
       
       // Replace display track with camera track for all peers
-      for (const [socketId, peer] of this.peers.entries()) {
+      for (const [socketId, peer] of this.peers.entries()) { // eslint-disable-line no-unused-vars
         const videoTrack = cameraStream.getVideoTracks()[0];
         peer.replaceTrack(this.localStream.getVideoTracks()[0], videoTrack, cameraStream);
       }
@@ -328,7 +328,7 @@ class PeerService {
     console.log('Cleaning up peer connections');
     
     // Close all peer connections
-    for (const [socketId, peer] of this.peers.entries()) {
+    for (const [socketId, peer] of this.peers.entries()) { // eslint-disable-line no-unused-vars
       peer.destroy();
     }
     this.peers.clear();
@@ -351,7 +351,7 @@ class PeerService {
       currentRoom: this.currentRoomId
     };
 
-    for (const [socketId, peer] of this.peers.entries()) {
+    for (const [socketId, peer] of this.peers.entries()) { // eslint-disable-line no-unused-vars
       if (peer.connected) {
         stats.activePeers++;
       }
