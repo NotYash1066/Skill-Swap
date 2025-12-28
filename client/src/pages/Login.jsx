@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
+import { PasswordInput } from '../components/common';
 import '../styles/Auth.css';
 
 const Login = () => {
@@ -11,7 +12,7 @@ const Login = () => {
   });
   const [errors, setErrors] = useState([]);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // eslint-disable-line no-unused-vars
 
   const { email, password } = formData;
 
@@ -81,8 +82,7 @@ const Login = () => {
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              type="password"
+            <PasswordInput
               id="password"
               name="password"
               value={password}
@@ -103,7 +103,7 @@ const Login = () => {
 
         <div className="auth-footer">
           <p>
-            Don't have an account? <Link to="/register">Sign up here</Link>
+            Don&apos;t have an account? <Link to="/register">Sign up here</Link>
           </p>
         </div>
       </div>

@@ -190,6 +190,48 @@ a:hover {
   font-size: var(--font-size-lg);
 }
 
+/* Password Input Component */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input {
+  padding-right: 40px !important;
+  width: 100%;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  box-shadow: none !important;
+  width: auto;
+  min-width: auto;
+  transform: none !important;
+}
+
+.password-toggle-btn:hover {
+  color: var(--color-primary);
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  border-radius: 4px;
+}
+
 /* Card Component */
 .card {
   background: var(--bg-elevated);

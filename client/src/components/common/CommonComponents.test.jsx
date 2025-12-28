@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Button, Input, Card, Spinner } from './index';
+import { Button, Input, Card, Spinner, PasswordInput } from './index';
 
 describe('Common UI Components', () => {
   describe('Button', () => {
@@ -38,6 +38,37 @@ describe('Common UI Components', () => {
       const input = screen.getByPlaceholderText('Enter text');
       expect(input).toBeInTheDocument();
       expect(input).toHaveClass('input');
+    });
+  });
+
+  describe('PasswordInput', () => {
+    it('renders password input element', () => {
+      render(<PasswordInput placeholder="Enter password" />);
+      const input = screen.getByPlaceholderText('Enter password');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveAttribute('type', 'password');
+    });
+
+    it('toggles password visibility', () => {
+      render(<PasswordInput placeholder="Enter password" />);
+      const input = screen.getByPlaceholderText('Enter password');
+      const toggleBtn = screen.getByLabelText('Show password');
+
+      // Initially password
+      expect(input).toHaveAttribute('type', 'password');
+
+      // Click toggle
+      fireEvent.click(toggleBtn);
+
+      // Should be text
+      expect(input).toHaveAttribute('type', 'text');
+      expect(screen.getByLabelText('Hide password')).toBeInTheDocument();
+
+      // Click toggle again
+      fireEvent.click(toggleBtn);
+
+      // Should be password again
+      expect(input).toHaveAttribute('type', 'password');
     });
   });
 
