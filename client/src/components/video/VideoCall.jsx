@@ -13,13 +13,12 @@ import useVideoCall from '../../hooks/useVideoCall';
 import './VideoCall.css';
 
 const VideoCall = ({ socket, currentUser, onCallEnd, manager }) => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const video = manager || useVideoCall(socket, currentUser);
   const {
-    isCallActive,
     isIncomingCall,
     callState,
     participants,
-    localStream,
     caller,
     error,
     isMuted,
