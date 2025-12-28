@@ -21,77 +21,87 @@ const useVideoCall = (socket, currentUser) => {
   const localVideoRef = useRef(null);
   const remoteVideosRef = useRef(new Map());
 
-  // Ensure local video element gets the stream when available or when element mounts
-  useEffect(() => {
+  // Reset call state - MOVED UP before it's used
+  const resetCallState = useCallback(() => {
+    setIsCallActive(false);
+    setIsIncomingCall(false);
+    setCallState('idle');
+    setParticipants(new Map());
+    setLocalStream(null);
+    setCurrentRoomId(null);
+    setCaller(null);
+    setError(null);
+    setIsMuted(false);
+    setIsVideoEnabled(true);
+    setIsScreenSharing(false);
+    remoteVideosRef.current.clear();
+  }, []);
+
+  // End active call - MOVED UP before it's used
+  const endCall = useCallback(() => {
+    console.log('Ending video call');
+    
+    peerService.leaveRoom();
+    
+    // Stop local stream
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+    }
+
+    // Clear local video element to release camera reference
     const el = localVideoRef.current;
-    if (el && localStream) {
-      try {
-        el.srcObject = localStream;
-        const p = el.play?.();
-        if (p && typeof p.then === 'function') {
-          p.catch(() => {});
-        }
-      } catch (e) {
-        // no-op: some browsers set srcObject synchronously only
-      }
+    if (el) {
+      el.srcObject = null;
     }
-  }, [localStream]);
 
-  // Initialize peer service
-  useEffect(() => {
-    if (socket && currentUser) {
-      peerService.initialize(socket);
-      
-      // Register current user
-      socket.emit('register-user', currentUser.id);
-      
-      // Set up peer service callbacks
-      peerService.onStreamReceived = handleRemoteStream;
-      peerService.onPeerDisconnected = handlePeerDisconnected;
-      peerService.onConnectionStateChanged = handleConnectionStateChanged;
-      peerService.onError = handlePeerError;
+    resetCallState();
+  }, [localStream, resetCallState]);
+
+  // Handle remote stream received
+  const handleRemoteStream = useCallback((socketId, stream) => {
+    console.log('Remote stream received from:', socketId);
+    
+    setParticipants(prev => {
+      const updated = new Map(prev);
+      updated.set(socketId, {
+        socketId,
+        stream,
+        isScreenSharing: false
+      });
+      return updated;
+    });
+
+    // Set video element if ref exists
+    const videoElement = remoteVideosRef.current.get(socketId);
+    if (videoElement) {
+      videoElement.srcObject = stream;
+      const p = videoElement.play?.();
+      if (p && typeof p.then === 'function') p.catch(() => {});
     }
-  }, [socket, currentUser]);
+  }, []);
 
-  // Set up socket listeners for call management
-  useEffect(() => {
-    if (!socket) return;
+  // Handle peer disconnected
+  const handlePeerDisconnected = useCallback((socketId) => {
+    console.log('Peer disconnected:', socketId);
+    
+    setParticipants(prev => {
+      const updated = new Map(prev);
+      updated.delete(socketId);
+      return updated;
+    });
 
-    // Handle incoming call invitation
-    socket.on('incoming-video-call', handleIncomingCall);
-    socket.on('call-accepted', handleCallAccepted);
-    socket.on('call-rejected', handleCallRejected);
-    socket.on('call-initiated', handleCallInitiated);
-    socket.on('call-error', handleCallError);
-    socket.on('call-ended', handleCallEnded);
-    socket.on('joined-video-room', handleJoinedVideoRoom);
-    socket.on('screen-share-started', handleScreenShareStarted);
-    socket.on('screen-share-stopped', handleScreenShareStopped);
+    remoteVideosRef.current.delete(socketId);
+  }, []);
 
-    return () => {
-      socket.off('incoming-video-call', handleIncomingCall);
-      socket.off('call-accepted', handleCallAccepted);
-      socket.off('call-rejected', handleCallRejected);
-      socket.off('call-initiated', handleCallInitiated);
-      socket.off('call-error', handleCallError);
-      socket.off('call-ended', handleCallEnded);
-      socket.off('joined-video-room', handleJoinedVideoRoom);
-      socket.off('screen-share-started', handleScreenShareStarted);
-      socket.off('screen-share-stopped', handleScreenShareStopped);
-    };
-  }, [socket]);
+  // Handle connection state changed
+  const handleConnectionStateChanged = useCallback((socketId, state) => {
+    console.log(`Connection state changed for ${socketId}:`, state);
+  }, []);
 
-  // Cleanup on unmount to stop camera/mic and peers
-  useEffect(() => {
-    return () => {
-      try {
-        peerService.cleanup();
-      } catch {}
-      const el = localVideoRef.current;
-      if (el) {
-        el.srcObject = null;
-      }
-    };
+  // Handle peer error
+  const handlePeerError = useCallback((message) => {
+    console.error('Peer error:', message);
+    setError(message);
   }, []);
 
   // Handle incoming call
@@ -151,12 +161,14 @@ const useVideoCall = (socket, currentUser) => {
       }
       const el = localVideoRef.current;
       if (el) el.srcObject = null;
-    } catch {}
+    } catch (e) {
+      // Ignore cleanup errors
+    }
 
     setTimeout(() => {
       resetCallState();
     }, 3000);
-  }, [localStream]);
+  }, [localStream, resetCallState]);
 
   // Handle call error
   const handleCallError = useCallback((data) => {
@@ -170,7 +182,9 @@ const useVideoCall = (socket, currentUser) => {
       }
       const el = localVideoRef.current;
       if (el) el.srcObject = null;
-    } catch {}
+    } catch (e) {
+      // Ignore cleanup errors
+    }
   }, [localStream]);
 
   // Handle call ended
@@ -178,60 +192,13 @@ const useVideoCall = (socket, currentUser) => {
     console.log('Call ended:', data);
     setCallState('ended');
     endCall();
-  }, []);
+  }, [endCall]);
 
   // Handle joined video room
   const handleJoinedVideoRoom = useCallback(() => {
     console.log('Successfully joined video room');
     setIsCallActive(true);
     setCallState('connected');
-  }, []);
-
-  // Handle remote stream received
-  const handleRemoteStream = useCallback((socketId, stream) => {
-    console.log('Remote stream received from:', socketId);
-    
-    setParticipants(prev => {
-      const updated = new Map(prev);
-      updated.set(socketId, {
-        socketId,
-        stream,
-        isScreenSharing: false
-      });
-      return updated;
-    });
-
-    // Set video element if ref exists
-    const videoElement = remoteVideosRef.current.get(socketId);
-    if (videoElement) {
-      videoElement.srcObject = stream;
-      const p = videoElement.play?.();
-      if (p && typeof p.then === 'function') p.catch(() => {});
-    }
-  }, []);
-
-  // Handle peer disconnected
-  const handlePeerDisconnected = useCallback((socketId) => {
-    console.log('Peer disconnected:', socketId);
-    
-    setParticipants(prev => {
-      const updated = new Map(prev);
-      updated.delete(socketId);
-      return updated;
-    });
-
-    remoteVideosRef.current.delete(socketId);
-  }, []);
-
-  // Handle connection state changed
-  const handleConnectionStateChanged = useCallback((socketId, state) => {
-    console.log(`Connection state changed for ${socketId}:`, state);
-  }, []);
-
-  // Handle peer error
-  const handlePeerError = useCallback((message) => {
-    console.error('Peer error:', message);
-    setError(message);
   }, []);
 
   // Handle screen share events
@@ -261,8 +228,83 @@ const useVideoCall = (socket, currentUser) => {
     });
   }, []);
 
+  // Ensure local video element gets the stream when available or when element mounts
+  useEffect(() => {
+    const el = localVideoRef.current;
+    if (el && localStream) {
+      try {
+        el.srcObject = localStream;
+        const p = el.play?.();
+        if (p && typeof p.then === 'function') {
+          p.catch(() => {});
+        }
+      } catch (e) {
+        // no-op: some browsers set srcObject synchronously only
+      }
+    }
+  }, [localStream]);
+
+  // Initialize peer service
+  useEffect(() => {
+    if (socket && currentUser) {
+      peerService.initialize(socket);
+      
+      // Register current user
+      socket.emit('register-user', currentUser.id);
+      
+      // Set up peer service callbacks
+      peerService.onStreamReceived = handleRemoteStream;
+      peerService.onPeerDisconnected = handlePeerDisconnected;
+      peerService.onConnectionStateChanged = handleConnectionStateChanged;
+      peerService.onError = handlePeerError;
+    }
+  }, [socket, currentUser, handleRemoteStream, handlePeerDisconnected, handleConnectionStateChanged, handlePeerError]);
+
+  // Set up socket listeners for call management
+  useEffect(() => {
+    if (!socket) return;
+
+    // Handle incoming call invitation
+    socket.on('incoming-video-call', handleIncomingCall);
+    socket.on('call-accepted', handleCallAccepted);
+    socket.on('call-rejected', handleCallRejected);
+    socket.on('call-initiated', handleCallInitiated);
+    socket.on('call-error', handleCallError);
+    socket.on('call-ended', handleCallEnded);
+    socket.on('joined-video-room', handleJoinedVideoRoom);
+    socket.on('screen-share-started', handleScreenShareStarted);
+    socket.on('screen-share-stopped', handleScreenShareStopped);
+
+    return () => {
+      socket.off('incoming-video-call', handleIncomingCall);
+      socket.off('call-accepted', handleCallAccepted);
+      socket.off('call-rejected', handleCallRejected);
+      socket.off('call-initiated', handleCallInitiated);
+      socket.off('call-error', handleCallError);
+      socket.off('call-ended', handleCallEnded);
+      socket.off('joined-video-room', handleJoinedVideoRoom);
+      socket.off('screen-share-started', handleScreenShareStarted);
+      socket.off('screen-share-stopped', handleScreenShareStopped);
+    };
+  }, [socket, handleIncomingCall, handleCallAccepted, handleCallRejected, handleCallInitiated, handleCallError, handleCallEnded, handleJoinedVideoRoom, handleScreenShareStarted, handleScreenShareStopped]);
+
+  // Cleanup on unmount to stop camera/mic and peers
+  useEffect(() => {
+    return () => {
+      try {
+        peerService.cleanup();
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+      const el = localVideoRef.current;
+      if (el) {
+        el.srcObject = null;
+      }
+    };
+  }, []);
+
   // Initiate a video call
-  const initiateCall = useCallback(async (targetUserId, targetUserName) => {
+  const initiateCall = useCallback(async (targetUserId) => {
     try {
       setCallState('calling');
       setError(null);
@@ -333,43 +375,7 @@ const useVideoCall = (socket, currentUser) => {
       reason: 'declined'
     });
     resetCallState();
-  }, [socket, currentRoomId, caller]);
-
-  // End active call
-  const endCall = useCallback(() => {
-    console.log('Ending video call');
-    
-    peerService.leaveRoom();
-    
-    // Stop local stream
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-    }
-
-    // Clear local video element to release camera reference
-    const el = localVideoRef.current;
-    if (el) {
-      el.srcObject = null;
-    }
-
-    resetCallState();
-  }, [localStream]);
-
-  // Reset call state
-  const resetCallState = useCallback(() => {
-    setIsCallActive(false);
-    setIsIncomingCall(false);
-    setCallState('idle');
-    setParticipants(new Map());
-    setLocalStream(null);
-    setCurrentRoomId(null);
-    setCaller(null);
-    setError(null);
-    setIsMuted(false);
-    setIsVideoEnabled(true);
-    setIsScreenSharing(false);
-    remoteVideosRef.current.clear();
-  }, []);
+  }, [socket, currentRoomId, caller, resetCallState]);
 
   // Toggle microphone
   const toggleMicrophone = useCallback(() => {
