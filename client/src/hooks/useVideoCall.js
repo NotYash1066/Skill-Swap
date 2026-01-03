@@ -290,15 +290,16 @@ const useVideoCall = (socket, currentUser) => {
 
   // Cleanup on unmount to stop camera/mic and peers
   useEffect(() => {
+    const videoElement = localVideoRef.current; // Capture ref value
     return () => {
       try {
         peerService.cleanup();
       } catch (e) {
         // Ignore cleanup errors
       }
-      const el = localVideoRef.current;
-      if (el) {
-        el.srcObject = null;
+
+      if (videoElement) {
+        videoElement.srcObject = null;
       }
     };
   }, []);

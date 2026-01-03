@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
@@ -29,18 +29,7 @@ const ProfileSettings = () => {
     { value: 'weekend_evening', label: 'Weekend Evening' }
   ];
 
-  useEffect(() => {
-    fetchUserData();
-    fetchCountries();
-  }, []);
-
-  useEffect(() => {
-    if (formData.country) {
-      fetchCities(formData.country);
-    }
-  }, [formData.country]);
-
-  const fetchCountries = async () => {
+  const fetchCountries = useCallback(async () => {
     try {
       const response = await axios.get('https://countriesnow.space/api/v0.1/countries');
       const countryList = response.data.data
@@ -50,9 +39,9 @@ const ProfileSettings = () => {
     } catch (err) {
       console.error('Error fetching countries:', err);
     }
-  };
+  }, []);
 
-  const fetchCities = async (country) => {
+  const fetchCities = useCallback(async (country) => {
     setLoadingCities(true);
     try {
       const response = await axios.post('https://countriesnow.space/api/v0.1/countries/cities', {
@@ -67,9 +56,9 @@ const ProfileSettings = () => {
     } finally {
       setLoadingCities(false);
     }
-  };
+  }, []);
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(API_ENDPOINTS.AUTH.ME, {
@@ -88,7 +77,18 @@ const ProfileSettings = () => {
         navigate('/login');
       }
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchUserData();
+    fetchCountries();
+  }, [fetchUserData, fetchCountries]);
+
+  useEffect(() => {
+    if (formData.country) {
+      fetchCities(formData.country);
+    }
+  }, [formData.country, fetchCities]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

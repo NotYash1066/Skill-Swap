@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import * as fabric from 'fabric';
 import './Whiteboard.css';
 
@@ -44,7 +45,7 @@ const Whiteboard = ({ socket, roomId, onClose }) => {
       canvas.dispose();
       fabricCanvasRef.current = null;
     };
-  }, []);
+  }, [size, color]); // Added dependencies
 
   // Join whiteboard room and set up socket events
   useEffect(() => {
@@ -166,6 +167,16 @@ const Whiteboard = ({ socket, roomId, onClose }) => {
       </div>
     </div>
   );
+};
+
+Whiteboard.propTypes = {
+  socket: PropTypes.shape({
+    emit: PropTypes.func,
+    on: PropTypes.func,
+    off: PropTypes.func,
+  }),
+  roomId: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default Whiteboard;

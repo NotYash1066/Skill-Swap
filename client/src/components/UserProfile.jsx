@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import { FiStar, FiX } from 'react-icons/fi';
 import { API_ENDPOINTS } from '../config/api';
@@ -10,12 +11,7 @@ const UserProfile = ({ userId, onClose }) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchUserProfile();
-    fetchReviews();
-  }, [userId]);
-
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get(API_ENDPOINTS.AUTH.USER(userId), {
@@ -27,9 +23,9 @@ const UserProfile = ({ userId, onClose }) => {
       console.error('Error fetching user profile:', err);
       setLoading(false);
     }
-  };
+  }, [userId]);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get(API_ENDPOINTS.REVIEWS.USER(userId), {
@@ -39,7 +35,12 @@ const UserProfile = ({ userId, onClose }) => {
     } catch (err) {
       console.error('Error fetching reviews:', err);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    fetchUserProfile(); // eslint-disable-line react-hooks/set-state-in-effect
+    fetchReviews();
+  }, [userId, fetchUserProfile, fetchReviews]);
 
   if (loading) return (
     <div className="user-profile-modal">
@@ -155,6 +156,11 @@ const UserProfile = ({ userId, onClose }) => {
       </Card>
     </div>
   );
+};
+
+UserProfile.propTypes = {
+  userId: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired,
 };
 
 export default UserProfile;

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import useVideoCall from '../../hooks/useVideoCall';
 
@@ -27,3 +28,12 @@ const VideoCallInitiator = ({ socket, currentUser, targetUser, onCallEnd }) => {
 };
 
 export default VideoCallInitiator;
+VideoCallInitiator.propTypes = {
+  socket: PropTypes.object,
+  currentUser: PropTypes.object,
+  targetUser: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    username: PropTypes.string.isRequired,
+  }).isRequired,
+  onCallEnd: PropTypes.func,
+};

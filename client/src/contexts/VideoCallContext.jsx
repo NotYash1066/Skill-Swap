@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import io from 'socket.io-client';
 import { API_BASE_URL } from '../config/api';
 import useVideoCall from '../hooks/useVideoCall';
@@ -13,46 +14,43 @@ const getCurrentUser = () => {
     if (!token) return null;
     const payload = JSON.parse(atob(token.split('.')[1]));
     return { id: payload.user.id, username: payload.user.username || payload.user.name || 'User' };
-  } catch (e) {
+  } catch {
     return null;
   }
 };
 
 export const VideoCallProvider = ({ children }) => {
-  const [socket, setSocket] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  // Initialize current user on mount (lazy)
+  const [currentUser] = useState(() => getCurrentUser());
   const managerRef = useRef(null);
 
-  // Initialize current user on mount
-  useEffect(() => {
-    setCurrentUser(getCurrentUser());
-  }, []);
-
   // Initialize dedicated socket for video calling
-  useEffect(() => {
-    if (!currentUser) return;
-
-    const s = io(API_BASE_URL, { transports: ['websocket'] });
-    setSocket(s);
-
-    s.on('connect', () => {
-      // useVideoCall will emit register-user
-      // Keeping this here in case we need other top-level events later
-      // console.log('Video socket connected', s.id);
-    });
-
-    s.on('disconnect', () => {
-      // console.log('Video socket disconnected');
-    });
-
-    return () => {
-      try { s.disconnect(); } catch {}
-      setSocket(null);
-    };
+  // We use useMemo to create it only once when currentUser changes
+  const socket = useMemo(() => {
+    if (!currentUser) return null;
+    return io(API_BASE_URL, { transports: ['websocket'] });
   }, [currentUser]);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    // We can add listeners here if needed, or rely on useVideoCall
+    // socket.on('connect', () => ...);
+
+    return () => {
+      try {
+        socket.disconnect();
+      } catch {
+        // Ignore errors during disconnect
+      }
+    };
+  }, [socket]);
+
   const manager = useVideoCall(socket, currentUser);
-  managerRef.current = manager;
+
+  useEffect(() => {
+    managerRef.current = manager;
+  }, [manager]);
 
   // Allow other components (e.g., Chat) to initiate calls without direct coupling
   useEffect(() => {
@@ -73,6 +71,10 @@ export const VideoCallProvider = ({ children }) => {
       {children}
     </VideoCallContext.Provider>
   );
+};
+
+VideoCallProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };
 
 export const useVideoCallContext = () => useContext(VideoCallContext);

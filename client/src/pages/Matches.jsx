@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
@@ -22,11 +22,7 @@ const Matches = () => {
   const [filters, setFilters] = useState({});
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchData();
-  }, [filters]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
@@ -57,7 +53,11 @@ const Matches = () => {
       }
       setLoading(false);
     }
-  };
+  }, [filters, navigate]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const sendMatchRequest = async (recipientId, matchedSkills) => {
     try {
