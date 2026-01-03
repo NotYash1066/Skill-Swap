@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 import { FiFilter } from 'react-icons/fi';
 import { Button, Input, Card } from './common';
@@ -108,3 +109,6 @@ const AdvancedSearch = ({ onSearch }) => {
 };
 
 export default AdvancedSearch;
+AdvancedSearch.propTypes = {
+  onSearch: PropTypes.func.isRequired,
+};

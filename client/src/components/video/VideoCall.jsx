@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { 
   FiVideo, 
@@ -294,3 +295,10 @@ const VideoCall = ({ socket, currentUser, onCallEnd, manager }) => {
 };
 
 export default VideoCall;
+
+VideoCall.propTypes = {
+  socket: PropTypes.object,
+  currentUser: PropTypes.object,
+  onCallEnd: PropTypes.func,
+  manager: PropTypes.object,
+};

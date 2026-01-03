@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import axios from 'axios';
 import { FiBell } from 'react-icons/fi';
 import { API_ENDPOINTS } from '../config/api';
@@ -9,20 +10,7 @@ const NotificationBell = ({ socket }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => {
-    fetchNotifications();
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (socket && user) {
-      socket.emit('join-notifications', user._id);
-      socket.on('new-notification', (notification) => {
-        setNotifications(prev => [notification, ...prev]);
-        setUnreadCount(prev => prev + 1);
-      });
-    }
-    return () => socket?.off('new-notification');
-  }, [socket]);
-
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const res = await axios.get(API_ENDPOINTS.NOTIFICATIONS.LIST, {
@@ -33,7 +21,20 @@ const NotificationBell = ({ socket }) => {
     } catch (err) {
       console.error('Error fetching notifications:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications(); // eslint-disable-line react-hooks/set-state-in-effect
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (socket && user) {
+      socket.emit('join-notifications', user._id);
+      socket.on('new-notification', (notification) => {
+        setNotifications(prev => [notification, ...prev]);
+        setUnreadCount(prev => prev + 1);
+      });
+    }
+    return () => socket?.off('new-notification');
+  }, [socket, fetchNotifications]);
 
   const markAsRead = async (id) => {
     try {
@@ -72,6 +73,14 @@ const NotificationBell = ({ socket }) => {
       )}
     </div>
   );
+};
+
+NotificationBell.propTypes = {
+  socket: PropTypes.shape({
+    emit: PropTypes.func,
+    on: PropTypes.func,
+    off: PropTypes.func,
+  }),
 };
 
 export default NotificationBell;
