@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Redis for Queues/Sockets
+  redis:
+    image: redis:7-alpine
+    container_name: skillswap-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - skillswap-network
+
+  # Backend Server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: skillswap-server
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PORT=5000
+      # MONGO_URI, JWT_SECRET, etc. will be passed from the .env file
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+    networks:
+      - skillswap-network
+
+  # Frontend Client (Nginx)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: skillswap-client
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - skillswap-network
+
+networks:
+  skillswap-network:
+    driver: bridge

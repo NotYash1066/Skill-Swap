@@ -62,14 +62,9 @@ describe('Matching Algorithm', () => {
         expect(res.status).toBe(200);
         
         const match = res.body.find(m => m.username === 'JavaDev');
-        expect(match).toBeDefined();
-        
-        // This assertion verifies the current bug (we expect this to FAIL when we fix it, 
-        // or rather we expect the value to be 0 if fixed)
-        // Since I am in Red phase, I want to verify it FAILS the check for "Correctness".
-        // So if I expect it to be 0, it should fail now (because it is > 0).
-        expect(match.compatibilityScore).toBe(0);
-        expect(match.matchedSkills).toEqual([]);
+        // Since we filter out matches with < 1 compatibility score by default,
+        // a non-match should effectively result in the user not being in the list.
+        expect(match).toBeUndefined();
     });
 
     it('should match exact skills case-insensitively', async () => {
