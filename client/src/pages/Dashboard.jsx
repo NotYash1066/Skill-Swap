@@ -5,14 +5,13 @@ import { io } from 'socket.io-client';
 import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
 import ThemeToggle from '../components/ThemeToggle';
 import NotificationBell from '../components/NotificationBell';
+import SkillSelector from '../components/common/SkillSelector';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [skillsOffered, setSkillsOffered] = useState([]);
   const [skillsSought, setSkillsSought] = useState([]);
-  const [newSkillOffered, setNewSkillOffered] = useState('');
-  const [newSkillSought, setNewSkillSought] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -70,26 +69,6 @@ const Dashboard = () => {
     }
   }, [error, successMessage]);
 
-  const validateSkill = (skill) => {
-    const trimmed = skill.trim();
-    if (trimmed.length === 0) {
-      return { isValid: false, message: 'Skill cannot be empty.' };
-    }
-    if (trimmed.length > 50) {
-      return { isValid: false, message: 'Skill must be 50 characters or less.' };
-    }
-    if (!/^[a-zA-Z0-9\s-.]+$/.test(trimmed)) {
-      return { isValid: false, message: 'Skill contains invalid characters.' };
-    }
-    return { isValid: true, message: '' };
-  };
-
-  const checkDuplicateSkill = (skill, skillArray) => {
-    return skillArray.some(existingSkill => 
-      existingSkill.toLowerCase() === skill.toLowerCase()
-    );
-  };
-
   const updateSkills = async (offered, sought) => {
     try {
       const token = localStorage.getItem('token');
@@ -104,6 +83,8 @@ const Dashboard = () => {
       const updatedUser = { ...user, skillsOffered: offered, skillsSought: sought };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setUser(updatedUser);
+      setSuccessMessage('Skills updated successfully!');
+      setError('');
     } catch (err) {
       console.error('Error updating skills:', err);
       if (err.response?.data?.errors) {
@@ -115,83 +96,21 @@ const Dashboard = () => {
     }
   };
 
-  const addSkillOffered = async () => {
-    const validation = validateSkill(newSkillOffered);
-    if (!validation.isValid) {
-      setError(validation.message);
-      return;
-    }
-
-    if (checkDuplicateSkill(newSkillOffered, skillsOffered)) {
-      setError('You have already added this skill to your offered skills.');
-      return;
-    }
-
-    if (skillsOffered.length >= 20) {
-      setError('You can add a maximum of 20 skills offered.');
-      return;
-    }
-
+  const handleSkillsOfferedChange = async (newSkills) => {
     try {
-      const updatedSkills = [...skillsOffered, newSkillOffered.trim()];
-      await updateSkills(updatedSkills, skillsSought);
-      setSkillsOffered(updatedSkills);
-      setNewSkillOffered('');
-      setSuccessMessage('Skill added successfully!');
-      setError('');
+      await updateSkills(newSkills, skillsSought);
+      setSkillsOffered(newSkills);
     } catch (err) {
-      console.error('Error adding skill offered:', err);
-      setError('Failed to add skill. Please try again.');
+      // Error handled in updateSkills
     }
   };
 
-  const addSkillSought = async () => {
-    const validation = validateSkill(newSkillSought);
-    if (!validation.isValid) {
-      setError(validation.message);
-      return;
-    }
-
-    if (checkDuplicateSkill(newSkillSought, skillsSought)) {
-      setError('You have already added this skill to your sought skills.');
-      return;
-    }
-
-    if (skillsSought.length >= 20) {
-      setError('You can add a maximum of 20 skills sought.');
-      return;
-    }
-
+  const handleSkillsSoughtChange = async (newSkills) => {
     try {
-      const updatedSkills = [...skillsSought, newSkillSought.trim()];
-      await updateSkills(skillsOffered, updatedSkills);
-      setSkillsSought(updatedSkills);
-      setNewSkillSought('');
-      setSuccessMessage('Skill added successfully!');
-      setError('');
+      await updateSkills(skillsOffered, newSkills);
+      setSkillsSought(newSkills);
     } catch (err) {
-      console.error('Error adding skill sought:', err);
-      setError('Failed to add skill. Please try again.');
-    }
-  };
-
-  const removeSkillOffered = async (skillToRemove) => {
-    try {
-      const updatedSkills = skillsOffered.filter(skill => skill !== skillToRemove);
-      await updateSkills(updatedSkills, skillsSought);
-      setSkillsOffered(updatedSkills);
-    } catch (err) {
-      console.error('Error removing skill offered:', err);
-    }
-  };
-
-  const removeSkillSought = async (skillToRemove) => {
-    try {
-      const updatedSkills = skillsSought.filter(skill => skill !== skillToRemove);
-      await updateSkills(skillsOffered, updatedSkills);
-      setSkillsSought(updatedSkills);
-    } catch (err) {
-      console.error('Error removing skill sought:', err);
+      // Error handled in updateSkills
     }
   };
 
@@ -271,75 +190,17 @@ const Dashboard = () => {
         )}
         
         <div className="dashboard-grid">
-          {/* Skills I Offer Section */}
-          <div className="skill-section">
-            <h2>Skills I Offer ({skillsOffered.length}/20)</h2>
-            <div className="skill-input">
-              <input
-                type="text"
-                value={newSkillOffered}
-                onChange={(e) => setNewSkillOffered(e.target.value)}
-                placeholder="Add a skill you can teach..."
-                onKeyPress={(e) => e.key === 'Enter' && addSkillOffered()}
-                maxLength="50"
-              />
-              <button 
-                onClick={addSkillOffered} 
-                className="add-btn"
-                disabled={skillsOffered.length >= 20}
-              >
-                Add
-              </button>
-            </div>
-            <div className="skills-list">
-              {skillsOffered.map((skill, index) => (
-                <div key={index} className="skill-tag offered">
-                  {skill}
-                  <button 
-                    onClick={() => removeSkillOffered(skill)}
-                    className="remove-btn"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
+          <SkillSelector
+            title="Skills I Offer"
+            selectedSkills={skillsOffered}
+            onSkillsChange={handleSkillsOfferedChange}
+          />
 
-          {/* Skills I Want Section */}
-          <div className="skill-section">
-            <h2>Skills I Want to Learn ({skillsSought.length}/20)</h2>
-            <div className="skill-input">
-              <input
-                type="text"
-                value={newSkillSought}
-                onChange={(e) => setNewSkillSought(e.target.value)}
-                placeholder="Add a skill you want to learn..."
-                onKeyPress={(e) => e.key === 'Enter' && addSkillSought()}
-                maxLength="50"
-              />
-              <button 
-                onClick={addSkillSought} 
-                className="add-btn"
-                disabled={skillsSought.length >= 20}
-              >
-                Add
-              </button>
-            </div>
-            <div className="skills-list">
-              {skillsSought.map((skill, index) => (
-                <div key={index} className="skill-tag sought">
-                  {skill}
-                  <button 
-                    onClick={() => removeSkillSought(skill)}
-                    className="remove-btn"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
+          <SkillSelector
+            title="Skills I Want to Learn"
+            selectedSkills={skillsSought}
+            onSkillsChange={handleSkillsSoughtChange}
+          />
         </div>
 
         {/* Profile Summary */}

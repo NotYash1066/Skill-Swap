@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const levenshtein = require('fast-levenshtein');
 const auth = require('../middleware/auth');
 const { validateObjectId } = require('../middleware/inputValidation');
 const User = require('../models/User');
@@ -11,18 +12,45 @@ const { requestLimiter } = require('../middleware/rateLimit');
 const { sanitizeRegexInput } = require('../utils/validators');
 const { MATCH_STATUS, LIMITS } = require('../constants');
 
+// Constants for matching
+const SIMILARITY_THRESHOLD = 0.8;
+const EXACT_MATCH_SCORE = 20;
+const FUZZY_MATCH_SCORE = 15;
+
+/**
+ * Checks if two skills match (either exactly or fuzzy).
+ * @param {string} skill1 - First skill string.
+ * @param {string} skill2 - Second skill string.
+ * @returns {boolean} - True if they match.
+ */
+const areSkillsMatching = (skill1, skill2) => {
+  const s1 = skill1.toLowerCase().trim();
+  const s2 = skill2.toLowerCase().trim();
+
+  // Exact match
+  if (s1 === s2) return true;
+
+  // Fuzzy match
+  const distance = levenshtein.get(s1, s2);
+  const maxLength = Math.max(s1.length, s2.length);
+  const similarity = 1 - (distance / maxLength);
+
+  return similarity >= SIMILARITY_THRESHOLD;
+};
+
 // @route   GET /api/matches/potential
-// @desc    Get potential matches based on complementary skills
+// @desc    Get potential matches based on complementary skills with fuzzy matching
 // @access  Private
 router.get('/potential', auth, async (req, res, next) => {
   try {
-    const { search, skill, minCompatibility = 0, city, country, availability, proficiency, minRating } = req.query;
+    const { search, skill, minCompatibility = 0, city, country, availability, minRating } = req.query;
     
     // Sanitize inputs
     const sanitizedCity = sanitizeRegexInput(city);
     const sanitizedCountry = sanitizeRegexInput(country);
-    const currentUser = await User.findById(req.user.id);
 
+    // Get current user and their skills
+    const currentUser = await User.findById(req.user.id);
     const userSought = Array.isArray(currentUser?.skillsSought) ? currentUser.skillsSought : [];
     const userOffered = Array.isArray(currentUser?.skillsOffered) ? currentUser.skillsOffered : [];
 
@@ -44,14 +72,10 @@ router.get('/potential', auth, async (req, res, next) => {
     });
     const excluded = Array.from(excludeIds);
     
-    // Build query for finding potential matches
+    // Base query: Active users, not me, not already matched
     let matchQuery = {
       _id: { $ne: req.user.id, ...(excluded.length ? { $nin: excluded } : {}) },
-      isActive: { $ne: false },
-      $and: [
-        { skillsOffered: { $in: userSought } },
-        { skillsSought: { $in: userOffered } }
-      ]
+      isActive: { $ne: false }
     };
 
     // Advanced filters
@@ -60,13 +84,13 @@ router.get('/potential', auth, async (req, res, next) => {
     if (availability) matchQuery.availability = { $in: Array.isArray(availability) ? availability : [availability] };
     if (minRating) matchQuery.rating = { $gte: parseFloat(minRating) };
 
-    // Add username search filter if provided
+    // Search by username
     if (search && search.trim()) {
       const sanitizedSearch = sanitizeRegexInput(search);
       matchQuery.username = { $regex: sanitizedSearch, $options: 'i' };
     }
 
-    // Add specific skill filter if provided
+    // Search by specific skill (optional filter)
     if (skill && skill.trim()) {
       const sanitizedSkill = sanitizeRegexInput(skill);
       matchQuery.$or = [
@@ -75,51 +99,56 @@ router.get('/potential', auth, async (req, res, next) => {
       ];
     }
     
+    // Fetch potential candidates (LIMIT 100 to avoid performance issues with JS filtering)
     const potentialMatches = await User.find(matchQuery)
       .select('username email skillsOffered skillsSought bio avatar location availability proficiency rating reviewCount createdAt')
-      .limit(50);
+      .limit(100);
 
-    // Calculate compatibility and matched skills for each potential match
+    // Calculate compatibility and matched skills
     const matchesWithCompatibility = potentialMatches.map(user => {
       const otherOffered = Array.isArray(user.skillsOffered) ? user.skillsOffered : [];
       const otherSought = Array.isArray(user.skillsSought) ? user.skillsSought : [];
       const matchedSkills = [];
-      
-      // Skills they offer that we want
-      const theirOfferedWeWant = otherOffered.filter(skill => 
-        userSought.some(sought => 
-          sought.toLowerCase() === skill.toLowerCase()
-        )
+      let currentCompatibilityScore = 0;
+
+      // 1. Skills they offer that we want
+      const theirOfferedWeWant = otherOffered.filter(theirSkill =>
+        userSought.some(mySought => areSkillsMatching(mySought, theirSkill))
       );
       
-      // Skills we offer that they want
-      const weOfferTheyWant = userOffered.filter(skill => 
-        otherSought.some(sought => 
-          sought.toLowerCase() === skill.toLowerCase()
-        )
+      // 2. Skills we offer that they want
+      const weOfferTheyWant = userOffered.filter(myOffered =>
+        otherSought.some(theirSought => areSkillsMatching(theirSought, myOffered))
       );
       
       matchedSkills.push(...theirOfferedWeWant, ...weOfferTheyWant);
       
-      // Remove duplicates
-      const uniqueMatchedSkills = [...new Set(matchedSkills)];
+      // Calculate Score
+      // Add points for each match
+      theirOfferedWeWant.forEach(() => currentCompatibilityScore += EXACT_MATCH_SCORE);
       
-      // Calculate compatibility score (improved algorithm)
-      const baseScore = uniqueMatchedSkills.length * 15;
-      const mutualMatch = theirOfferedWeWant.length > 0 && weOfferTheyWant.length > 0 ? 20 : 0;
-      const compatibilityScore = Math.min(baseScore + mutualMatch, 100);
+      // Add bonus for mutual match (exchange)
+      if (theirOfferedWeWant.length > 0 && weOfferTheyWant.length > 0) {
+        currentCompatibilityScore += 30; // Bonus for mutual exchange
+      }
+
+      // Remove duplicates for display
+      const uniqueMatchedSkills = [...new Set(matchedSkills)];
       
       return {
         ...user.toObject(),
         matchedSkills: uniqueMatchedSkills,
-        compatibilityScore
+        compatibilityScore: Math.min(currentCompatibilityScore, 100)
       };
     });
 
     // Filter by minimum compatibility score if specified
-    const filteredMatches = matchesWithCompatibility.filter(match => 
-      match.compatibilityScore >= parseInt(minCompatibility)
-    );
+    // Default: Must have at least one match (>0 score) unless minCompatibility is 0
+    const filteredMatches = matchesWithCompatibility.filter(match => {
+      // If minCompatibility is explicit, use it. Otherwise ensure at least some match.
+      const minScore = minCompatibility ? parseInt(minCompatibility) : 1;
+      return match.compatibilityScore >= minScore;
+    });
 
     // Sort by compatibility score (highest first)
     filteredMatches.sort((a, b) => b.compatibilityScore - a.compatibilityScore);
