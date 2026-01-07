@@ -90,6 +90,28 @@ npm run dev
 - Frontend: http://localhost:5173
 - Backend: http://localhost:5000
 
+### Docker Setup
+
+1. **Build and start the containers**
+```bash
+docker-compose up --build
+```
+
+2. **Access the application**
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5000
+
+## Documentation
+
+For detailed information about the project, please refer to the following documents located in the `docs/` directory:
+
+- [Documentation Index](docs/DOCUMENTATION_INDEX.md) - **Start Here** for a complete guide to all documentation.
+- [Report Summary](docs/REPORT_SUMMARY.md) - Executive summary and quick overview.
+- [Complete Project Report](docs/COMPLETE_PROJECT_REPORT.md) - Comprehensive details on requirements, design, and implementation.
+- [API Reference](docs/API_REFERENCE.md) - Detailed API endpoints and usage.
+- [Architecture Diagrams](docs/ARCHITECTURE_DIAGRAMS.md) - System architecture and design diagrams.
+- [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) - Instructions for deploying the application.
+
 ## Usage
 
 1. **Register** - Create an account with username, email, and password
@@ -149,6 +171,7 @@ Skill-Swap/
 │   ├── socketHandlers/   # Socket.io handlers
 │   ├── utils/            # Utility functions
 │   └── server.js
+├── docs/                   # Project documentation and reports
 └── README.md
 ```
 
