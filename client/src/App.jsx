@@ -58,7 +58,10 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <VideoCallProvider>
-          <Router>
+          <Router future={{ 
+            v7_startTransition: true, 
+            v7_relativeSplatPath: true 
+          }}>
           <div className="App">
             {/* Global video call overlay mounted at app level */}
             <GlobalVideoCall />

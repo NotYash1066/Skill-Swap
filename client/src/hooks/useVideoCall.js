@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import peerService from '../services/peerService';
+import logger from '../utils/logger';
 
 const useVideoCall = (socket, currentUser) => {
   // Call states
@@ -39,7 +40,7 @@ const useVideoCall = (socket, currentUser) => {
 
   // End active call - MOVED UP before it's used
   const endCall = useCallback(() => {
-    console.log('Ending video call');
+    logger.info('Ending video call');
     
     peerService.leaveRoom();
     
@@ -59,7 +60,7 @@ const useVideoCall = (socket, currentUser) => {
 
   // Handle remote stream received
   const handleRemoteStream = useCallback((socketId, stream) => {
-    console.log('Remote stream received from:', socketId);
+    logger.info('Remote stream received from:', socketId);
     
     setParticipants(prev => {
       const updated = new Map(prev);
@@ -82,7 +83,7 @@ const useVideoCall = (socket, currentUser) => {
 
   // Handle peer disconnected
   const handlePeerDisconnected = useCallback((socketId) => {
-    console.log('Peer disconnected:', socketId);
+    logger.info('Peer disconnected:', socketId);
     
     setParticipants(prev => {
       const updated = new Map(prev);
@@ -95,18 +96,18 @@ const useVideoCall = (socket, currentUser) => {
 
   // Handle connection state changed
   const handleConnectionStateChanged = useCallback((socketId, state) => {
-    console.log(`Connection state changed for ${socketId}:`, state);
+    logger.debug(`Connection state changed for ${socketId}:`, state);
   }, []);
 
   // Handle peer error
   const handlePeerError = useCallback((message) => {
-    console.error('Peer error:', message);
+    logger.error('Peer error:', message);
     setError(message);
   }, []);
 
   // Handle incoming call
   const handleIncomingCall = useCallback((data) => {
-    console.log('Incoming video call:', data);
+    logger.info('Incoming video call:', data);
     setCaller(data);
     setIsIncomingCall(true);
     setCurrentRoomId(data.roomId);
@@ -115,14 +116,14 @@ const useVideoCall = (socket, currentUser) => {
 
   // Handle call initiated confirmation
   const handleCallInitiated = useCallback((data) => {
-    console.log('Call initiated:', data);
+    logger.info('Call initiated:', data);
     setCurrentRoomId(data.roomId);
     setCallState('calling');
   }, []);
 
   // Handle call accepted
   const handleCallAccepted = useCallback(async (data) => {
-    console.log('Call accepted:', data);
+    logger.info('Call accepted:', data);
     setCallState('connecting');
     setCurrentRoomId(data.roomId);
     
@@ -142,7 +143,7 @@ const useVideoCall = (socket, currentUser) => {
       // Join the video room
       peerService.joinRoom(data.roomId);
     } catch (error) {
-      console.error('Error setting up video call:', error);
+      logger.error('Error setting up video call:', error);
       setError('Failed to setup video call');
       setCallState('error');
     }
@@ -150,7 +151,7 @@ const useVideoCall = (socket, currentUser) => {
 
   // Handle call rejected
   const handleCallRejected = useCallback((data) => {
-    console.log('Call rejected:', data);
+    logger.info('Call rejected:', data);
     setCallState('rejected');
     setError('Call was declined');
 
@@ -172,7 +173,7 @@ const useVideoCall = (socket, currentUser) => {
 
   // Handle call error
   const handleCallError = useCallback((data) => {
-    console.error('Call error:', data);
+    logger.error('Call error:', data);
     setError(data.message);
     setCallState('error');
     // Ensure camera is released on error
@@ -189,21 +190,21 @@ const useVideoCall = (socket, currentUser) => {
 
   // Handle call ended
   const handleCallEnded = useCallback((data) => {
-    console.log('Call ended:', data);
+    logger.info('Call ended:', data);
     setCallState('ended');
     endCall();
   }, [endCall]);
 
   // Handle joined video room
   const handleJoinedVideoRoom = useCallback(() => {
-    console.log('Successfully joined video room');
+    logger.info('Successfully joined video room');
     setIsCallActive(true);
     setCallState('connected');
   }, []);
 
   // Handle screen share events
   const handleScreenShareStarted = useCallback((data) => {
-    console.log('Screen share started by:', data.userId);
+    logger.info('Screen share started by:', data.userId);
     setParticipants(prev => {
       const updated = new Map(prev);
       const participant = updated.get(data.socketId);
@@ -216,7 +217,7 @@ const useVideoCall = (socket, currentUser) => {
   }, []);
 
   const handleScreenShareStopped = useCallback((data) => {
-    console.log('Screen share stopped by:', data.userId);
+    logger.info('Screen share stopped by:', data.userId);
     setParticipants(prev => {
       const updated = new Map(prev);
       const participant = updated.get(data.socketId);
@@ -330,7 +331,7 @@ const useVideoCall = (socket, currentUser) => {
       });
 
     } catch (error) {
-      console.error('Error initiating call:', error);
+      logger.error('Error initiating call:', error);
       setError('Failed to start video call');
       setCallState('error');
     }
@@ -361,7 +362,7 @@ const useVideoCall = (socket, currentUser) => {
       });
 
     } catch (error) {
-      console.error('Error accepting call:', error);
+      logger.error('Error accepting call:', error);
       setError('Failed to accept call');
       setCallState('error');
     }
@@ -411,7 +412,7 @@ const useVideoCall = (socket, currentUser) => {
         }
       }
     } catch (error) {
-      console.error('Error toggling screen share:', error);
+      logger.error('Error toggling screen share:', error);
       setError('Failed to toggle screen sharing');
     }
   }, [isScreenSharing]);

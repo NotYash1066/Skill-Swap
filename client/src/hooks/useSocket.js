@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import { API_BASE_URL } from '../config/api';
+import logger from '../utils/logger';
 
 const useSocket = (userId) => {
   const socketRef = useRef(null);
@@ -17,14 +18,14 @@ const useSocket = (userId) => {
     const socket = socketRef.current;
 
     socket.on('connect', () => {
-      console.log('Connected to server:', socket.id);
+      logger.info('Connected to server:', socket.id);
       setSocketInstance(socket);
       // Join user to their chat rooms
       socket.emit('join-rooms', userId);
     });
 
     socket.on('disconnect', () => {
-      console.log('Disconnected from server');
+      logger.info('Disconnected from server');
       setSocketInstance(null);
     });
 

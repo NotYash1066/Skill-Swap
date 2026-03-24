@@ -1,4 +1,5 @@
 import Peer from 'simple-peer';
+import logger from '../utils/logger';
 
 class PeerService {
   constructor() {
@@ -44,32 +45,32 @@ class PeerService {
     if (!this.socket) return;
 
     this.socket.on('video-offer', (data) => {
-      console.log('Received video offer:', data);
+      logger.debug('Received video offer:', data);
       this.handleVideoOffer(data);
     });
 
     this.socket.on('video-answer', (data) => {
-      console.log('Received video answer:', data);
+      logger.debug('Received video answer:', data);
       this.handleVideoAnswer(data);
     });
 
     this.socket.on('ice-candidate', (data) => {
-      console.log('Received ICE candidate:', data);
+      logger.debug('Received ICE candidate:', data);
       this.handleIceCandidate(data);
     });
 
     this.socket.on('user-joined-video', (data) => {
-      console.log('User joined video room:', data);
+      logger.info('User joined video room:', data);
       this.handleUserJoined(data);
     });
 
     this.socket.on('participant-disconnected', (data) => {
-      console.log('Participant disconnected:', data);
+      logger.info('Participant disconnected:', data);
       this.handleParticipantDisconnected(data);
     });
 
     this.socket.on('call-ended', (data) => {
-      console.log('Call ended:', data);
+      logger.info('Call ended:', data);
       this.handleCallEnded(data);
     });
   }
@@ -77,12 +78,12 @@ class PeerService {
   // Get user media (camera and microphone)
   async getUserMedia(constraints = { video: true, audio: true }) {
     try {
-      console.log('Getting user media with constraints:', constraints);
+      logger.debug('Getting user media with constraints:', constraints);
       this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log('Local stream obtained successfully');
+      logger.info('Local stream obtained successfully');
       return this.localStream;
     } catch (error) {
-      console.error('Error getting user media:', error);
+      logger.error('Error getting user media:', error);
       if (this.onError) this.onError('Failed to access camera/microphone');
       throw error;
     }
@@ -91,15 +92,15 @@ class PeerService {
   // Get screen sharing stream
   async getDisplayMedia() {
     try {
-      console.log('Getting display media for screen sharing');
+      logger.debug('Getting display media for screen sharing');
       const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
         audio: false
       });
-      console.log('Display stream obtained successfully');
+      logger.info('Display stream obtained successfully');
       return displayStream;
     } catch (error) {
-      console.error('Error getting display media:', error);
+      logger.error('Error getting display media:', error);
       if (this.onError) this.onError('Failed to start screen sharing');
       throw error;
     }
@@ -107,7 +108,7 @@ class PeerService {
 
   // Create a peer connection
   createPeer(socketId, isInitiator = false, stream = null) {
-    console.log(`Creating peer for socket ${socketId}, initiator: ${isInitiator}`);
+    logger.info(`Creating peer for socket ${socketId}, initiator: ${isInitiator}`);
     
     const peer = new Peer({
       initiator: isInitiator,
@@ -118,7 +119,7 @@ class PeerService {
 
     // Handle peer events
     peer.on('signal', (signal) => {
-      console.log('Peer signal generated:', signal.type);
+      logger.debug('Peer signal generated:', signal.type);
       
       if (signal.type === 'offer') {
         this.socket.emit('video-offer', {
@@ -143,21 +144,21 @@ class PeerService {
     });
 
     peer.on('stream', (remoteStream) => {
-      console.log('Received remote stream from:', socketId);
+      logger.info('Received remote stream from:', socketId);
       if (this.onStreamReceived) {
         this.onStreamReceived(socketId, remoteStream);
       }
     });
 
     peer.on('connect', () => {
-      console.log('Peer connected:', socketId);
+      logger.info('Peer connected:', socketId);
       if (this.onConnectionStateChanged) {
         this.onConnectionStateChanged(socketId, 'connected');
       }
     });
 
     peer.on('close', () => {
-      console.log('Peer connection closed:', socketId);
+      logger.info('Peer connection closed:', socketId);
       this.removePeer(socketId);
       if (this.onPeerDisconnected) {
         this.onPeerDisconnected(socketId);
@@ -165,7 +166,7 @@ class PeerService {
     });
 
     peer.on('error', (error) => {
-      console.error('Peer error:', error);
+      logger.error('Peer error:', error);
       this.removePeer(socketId);
       if (this.onError) {
         this.onError(`Connection error with ${socketId}: ${error.message}`);
@@ -222,13 +223,13 @@ class PeerService {
 
   // Handle call ended
   handleCallEnded(data) {
-    console.log('Call ended, cleaning up all peers');
+    logger.info('Call ended, cleaning up all peers');
     this.cleanup();
   }
 
   // Join a video room
   joinRoom(roomId) {
-    console.log('Joining video room:', roomId);
+    logger.info('Joining video room:', roomId);
     this.currentRoomId = roomId;
     
     if (this.socket) {
@@ -267,7 +268,7 @@ class PeerService {
 
       return displayStream;
     } catch (error) {
-      console.error('Error starting screen share:', error);
+      logger.error('Error starting screen share:', error);
       throw error;
     }
   }
@@ -291,7 +292,7 @@ class PeerService {
         this.socket.emit('stop-screen-share', { roomId: this.currentRoomId });
       }
     } catch (error) {
-      console.error('Error stopping screen share:', error);
+      logger.error('Error stopping screen share:', error);
       throw error;
     }
   }
@@ -325,7 +326,7 @@ class PeerService {
 
   // Cleanup all connections
   cleanup() {
-    console.log('Cleaning up peer connections');
+    logger.debug('Cleaning up peer connections');
     
     // Close all peer connections
     for (const [socketId, peer] of this.peers.entries()) {
