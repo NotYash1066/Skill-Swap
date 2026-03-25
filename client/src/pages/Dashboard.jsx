@@ -51,6 +51,7 @@ const Dashboard = () => {
   }, [navigate]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchUserData();
   }, [fetchUserData]);
 
