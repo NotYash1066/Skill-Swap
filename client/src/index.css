@@ -1,19 +1,47 @@
-:root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light dark;
-  
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  body {
+    @apply font-body text-on-surface bg-surface;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
 }
 
-/* Reset basics */
-body {
-  margin: 0;
-  padding: 0;
+@layer utilities {
+  .kinetic-gradient {
+    background: linear-gradient(135deg, #4647d3 0%, #9396ff 100%);
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .input-focus-line::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: #4647d3;
+    transition: all 0.3s ease-out;
+    transform: translateX(-50%);
+  }
+  .input-container:focus-within .input-focus-line::after {
+    width: 100%;
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+#root {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
