@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
+import ThemeToggle from '../components/ThemeToggle';
 import '../styles/Auth.css';
 
 const Register = () => {
