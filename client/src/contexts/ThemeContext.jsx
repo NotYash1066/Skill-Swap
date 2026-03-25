@@ -30,7 +30,7 @@ export const ThemeProvider = ({ children }) => {
     const root = document.documentElement;
     
     // Remove all theme classes
-    root.classList.remove('theme-vibrant', 'theme-modern', 'theme-dark', 'dark-theme');
+    root.classList.remove('theme-vibrant', 'theme-modern', 'theme-dark', 'dark-theme', 'dark');
     
     // Add current theme class
     root.classList.add(`theme-${theme}`);
@@ -39,6 +39,7 @@ export const ThemeProvider = ({ children }) => {
     if (isDarkMode) {
       root.classList.add('theme-dark');
       root.classList.add('dark-theme');
+      root.classList.add('dark');
     }
   }, [theme, isDarkMode]);
 
