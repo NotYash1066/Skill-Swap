@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
+import ThemeToggle from '../components/ThemeToggle';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -47,6 +48,9 @@ const Login = () => {
 
   return (
     <main className="flex-grow flex items-center justify-center p-6 relative overflow-hidden">
+      <div className="absolute top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
       {/* Background Organic Elements */}
       <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-surface-container-high rounded-full blur-[120px] opacity-60"></div>
       <div className="absolute bottom-[-10%] right-[-5%] w-[35%] h-[35%] bg-secondary-container rounded-full blur-[100px] opacity-40"></div>
