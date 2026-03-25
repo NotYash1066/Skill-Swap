@@ -51,13 +51,12 @@ router.get('/potential-enhanced', auth, cache(300), async (req, res, next) => {
       query['location.city'] = new RegExp(location, 'i');
     }
     
-    const existingMatches = await Match.find({
-      $or: [{ requester: req.user.id }, { recipient: req.user.id }]
-    }).select('requester recipient');
+    const [recipientIds, requesterIds] = await Promise.all([
+      Match.distinct('recipient', { requester: req.user.id }),
+      Match.distinct('requester', { recipient: req.user.id })
+    ]);
     
-    const excludeIds = existingMatches.map(m => 
-      m.requester.toString() === req.user.id ? m.recipient : m.requester
-    );
+    const excludeIds = [...new Set([...recipientIds, ...requesterIds])];
     
     if (excludeIds.length) {
       query._id.$nin = excludeIds;
