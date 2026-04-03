@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ThemeToggle from '../ThemeToggle';
 import NotificationBell from '../NotificationBell';
+import { notifyAuthStateChange } from '../../utils/auth';
 
 const Navbar = ({ user, socket }) => {
   const location = useLocation();
@@ -11,7 +12,8 @@ const Navbar = ({ user, socket }) => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    notifyAuthStateChange();
+    navigate('/login', { replace: true });
   };
 
   return (
@@ -91,4 +93,3 @@ const Navbar = ({ user, socket }) => {
 };
 
 export default Navbar;
-

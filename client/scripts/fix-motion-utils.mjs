@@ -1,9 +1,9 @@
-/* global process */
-
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const shimPath = join(process.cwd(), 'node_modules', 'motion-utils', 'dist', 'es', 'window-config.mjs');
+const scriptPath = fileURLToPath(import.meta.url);
+const shimPath = join(dirname(scriptPath), '..', 'node_modules', 'motion-utils', 'dist', 'es', 'window-config.mjs');
 
 const shimSource = `const MotionGlobalConfig = {};
 const isBrowser = typeof window !== 'undefined';

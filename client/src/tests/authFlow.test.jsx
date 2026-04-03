@@ -1,9 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import axios from 'axios';
 import Login from '../pages/Login';
+import Register from '../pages/Register';
 
 // Mock axios
 vi.mock('axios');
@@ -12,25 +13,19 @@ vi.mock('axios');
 vi.mock('../config/api', () => ({
   API_ENDPOINTS: {
     AUTH: {
-      LOGIN: '/api/auth/login'
+      LOGIN: '/api/auth/login',
+      REGISTER: '/api/auth/register'
     }
   }
 }));
 
 describe('Authentication Flow Integration', () => {
-  const originalLocation = window.location;
-
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    
-    // Mock window.location
-    delete window.location;
-    window.location = { ...originalLocation, href: '' };
   });
 
   afterEach(() => {
-    window.location = originalLocation;
     vi.restoreAllMocks();
   });
 
@@ -48,9 +43,12 @@ describe('Authentication Flow Integration', () => {
     });
 
     render(
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Login />
-      </BrowserRouter>
+      <MemoryRouter initialEntries={['/login']}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<div>Dashboard Page</div>} />
+        </Routes>
+      </MemoryRouter>
     );
 
     // Fill out the login form
@@ -67,7 +65,7 @@ describe('Authentication Flow Integration', () => {
     // Wait for the redirect and token storage
     await waitFor(() => {
       expect(localStorage.getItem('token')).toBe(mockToken);
-      expect(window.location.href).toBe('/dashboard');
+      expect(screen.getByText('Dashboard Page')).toBeInTheDocument();
     });
 
     // Verify axios was called with correct data
@@ -89,9 +87,12 @@ describe('Authentication Flow Integration', () => {
     });
 
     render(
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Login />
-      </BrowserRouter>
+      <MemoryRouter initialEntries={['/login']}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<div>Dashboard Page</div>} />
+        </Routes>
+      </MemoryRouter>
     );
 
     // Fill out and submit the form
@@ -106,5 +107,45 @@ describe('Authentication Flow Integration', () => {
 
     // Verify token was NOT stored
     expect(localStorage.getItem('token')).toBeNull();
+  });
+
+  it('should successfully register and redirect to dashboard', async () => {
+    const mockToken = 'new-user-jwt-token';
+
+    axios.post.mockResolvedValueOnce({
+      data: {
+        token: mockToken,
+        user: { id: '456', email: 'new@example.com' }
+      }
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<div>Dashboard Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByPlaceholderText(/johndoe/i), { target: { value: 'newuser' } });
+    fireEvent.change(screen.getByPlaceholderText(/name@example.com/i), { target: { value: 'new@example.com' } });
+
+    const passwordInputs = screen.getAllByPlaceholderText('••••••••');
+    fireEvent.change(passwordInputs[0], { target: { value: 'password123' } });
+    fireEvent.change(passwordInputs[1], { target: { value: 'password123' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /Create Account/i }));
+
+    await waitFor(() => {
+      expect(localStorage.getItem('token')).toBe(mockToken);
+      expect(screen.getByText('Dashboard Page')).toBeInTheDocument();
+    });
+
+    expect(axios.post).toHaveBeenCalledWith('/api/auth/register', {
+      username: 'newuser',
+      email: 'new@example.com',
+      password: 'password123'
+    });
   });
 });

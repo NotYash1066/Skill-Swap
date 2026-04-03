@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -11,14 +11,15 @@ import Dashboard from "./pages/Dashboard";
 import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
 import ProfileSettings from "./pages/ProfileSettings";
+import { AUTH_STATE_CHANGE_EVENT } from "./utils/auth";
 import "./styles/App.css";
 import "./styles/themes.css";
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => Boolean(localStorage.getItem("token")));
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem("token")));
 
-  const verifyToken = async (token) => {
+  const verifyToken = useCallback(async (token) => {
     try {
       const response = await axios.get("/api/auth/verify-token", {
         headers: { Authorization: `Bearer ${token}` },
@@ -32,23 +33,54 @@ function App() {
       console.error("Token verification failed:", error.message);
       return false;
     }
-  };
+  }, []);
+
+  const syncAuthState = useCallback(async ({ startLoading = true } = {}) => {
+    if (startLoading) {
+      setLoading(true);
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setIsAuthenticated(false);
+      setLoading(false);
+      return;
+    }
+
+    const isValid = await verifyToken(token);
+    setIsAuthenticated(isValid);
+
+    if (!isValid) {
+      localStorage.removeItem("token");
+    }
+
+    setLoading(false);
+  }, [verifyToken]);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        const isValid = await verifyToken(token);
-        setIsAuthenticated(isValid);
-        if (!isValid) {
-          localStorage.removeItem("token");
-        }
-      }
-      setLoading(false);
+    const initialSyncId = window.setTimeout(() => {
+      void syncAuthState({ startLoading: false });
+    }, 0);
+
+    const handleAuthStateChange = () => {
+      void syncAuthState();
     };
 
-    checkAuth();
-  }, []);
+    const handleStorage = (event) => {
+      if (!event.key || event.key === "token") {
+        void syncAuthState();
+      }
+    };
+
+    window.addEventListener(AUTH_STATE_CHANGE_EVENT, handleAuthStateChange);
+    window.addEventListener("storage", handleStorage);
+
+    return () => {
+      window.clearTimeout(initialSyncId);
+      window.removeEventListener(AUTH_STATE_CHANGE_EVENT, handleAuthStateChange);
+      window.removeEventListener("storage", handleStorage);
+    };
+  }, [syncAuthState]);
 
   if (loading) {
     return <div>Loading...</div>;

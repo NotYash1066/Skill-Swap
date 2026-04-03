@@ -4,6 +4,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { API_ENDPOINTS } from '../config/api';
 import ThemeToggle from '../components/ThemeToggle';
+import { notifyAuthStateChange } from '../utils/auth';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -32,7 +33,8 @@ const Login = () => {
       });
 
       localStorage.setItem('token', res.data.token);
-      window.location.href = '/dashboard';
+      notifyAuthStateChange();
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       if (!err.response || err.response.status !== 400) {
         console.error('Login error:', err);
