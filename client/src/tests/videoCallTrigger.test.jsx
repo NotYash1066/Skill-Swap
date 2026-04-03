@@ -96,10 +96,10 @@ describe('Chat Video Call Trigger', () => {
 
     // Wait for chat rooms to load and select the first one
     await waitFor(() => {
-      expect(screen.getByText(otherUsername)).toBeInTheDocument();
+      expect(screen.getAllByText(otherUsername).length).toBeGreaterThan(0);
     });
 
-    fireEvent.click(screen.getByText(otherUsername));
+    fireEvent.click(screen.getAllByText(otherUsername)[0]);
 
     // Wait for chat room header to appear with video button
     await waitFor(() => {

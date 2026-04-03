@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import { API_ENDPOINTS } from '../config/api';
 import ThemeToggle from '../components/ThemeToggle';
-import '../styles/Auth.css';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -24,7 +24,6 @@ const Register = () => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setErrors([]);
 
     if (password !== confirmPassword) {
@@ -33,6 +32,7 @@ const Register = () => {
       return;
     }
 
+    setLoading(true);
     try {
       const res = await axios.post(API_ENDPOINTS.AUTH.REGISTER, {
         username,
@@ -41,9 +41,8 @@ const Register = () => {
       });
 
       localStorage.setItem('token', res.data.token);
-      navigate('/dashboard');
+      window.location.href = '/dashboard';
     } catch (err) {
-      console.error('Registration error:', err);
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
       } else {
@@ -54,91 +53,126 @@ const Register = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <h1>Join SkillSwap</h1>
-          <p>Create your account and start sharing skills</p>
+    <div className="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+      <main className="flex-grow flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute top-6 right-6 z-50">
+          <ThemeToggle />
         </div>
+        {/* Background Organic Elements */}
+        <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-surface-container-high rounded-full blur-[120px] opacity-60"></div>
+        <div className="absolute bottom-[-10%] right-[-5%] w-[35%] h-[35%] bg-secondary-container rounded-full blur-[100px] opacity-40"></div>
 
-        {errors.length > 0 && (
-          <div className="error-messages">
-            {errors.map((error, index) => (
-              <div key={index} className="error-message">
-                {error.msg}
+        {/* Register Container */}
+        <motion.div 
+          className="w-full max-w-[1100px] grid md:grid-cols-2 rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(48,41,80,0.12)] bg-surface-container-lowest relative z-10"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          {/* Branding Side */}
+          <div className="hidden md:flex flex-col justify-between p-12 bg-gradient-to-br from-primary to-primary-container text-on-primary">
+            <div>
+              <span className="text-2xl font-black tracking-tighter text-on-primary">SkillSwap</span>
+            </div>
+            <div className="space-y-6">
+              <h1 className="text-5xl font-extrabold tracking-tight leading-[1.1]">Start Your Journey.</h1>
+              <p className="text-on-primary/80 text-lg max-w-sm font-medium">Join the world's most energetic community of learners and mentors. Swap skills, build projects, grow together.</p>
+            </div>
+            <div className="flex -space-x-3">
+              <div className="w-12 h-12 rounded-full border-4 border-primary bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed font-bold text-sm">+2k</div>
+            </div>
+          </div>
+
+          {/* Form Side */}
+          <div className="p-8 md:p-16 flex flex-col justify-center bg-surface-container-lowest">
+            <div className="mb-10">
+              <h2 className="text-3xl font-extrabold text-on-surface tracking-tight mb-2">Create Account</h2>
+              <p className="text-on-surface-variant font-medium">Join thousands swapping expertise daily.</p>
+            </div>
+
+            {errors.length > 0 && (
+              <div className="mb-6 p-4 bg-error-container text-on-error-container rounded-xl text-sm font-medium">
+                {errors[0].msg}
               </div>
-            ))}
+            )}
+
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant block ml-1">Username</label>
+                <div className="relative">
+                  <input 
+                    className="w-full px-5 py-3 bg-surface-container-highest border-none rounded-xl text-on-surface placeholder:text-outline focus:ring-0 transition-all" 
+                    name="username"
+                    value={username}
+                    onChange={onChange}
+                    placeholder="johndoe" 
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant block ml-1">Email Address</label>
+                <div className="relative">
+                  <input 
+                    className="w-full px-5 py-3 bg-surface-container-highest border-none rounded-xl text-on-surface placeholder:text-outline focus:ring-0 transition-all" 
+                    type="email"
+                    name="email"
+                    value={email}
+                    onChange={onChange}
+                    placeholder="name@example.com" 
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant block ml-1">Password</label>
+                <div className="relative">
+                  <input 
+                    className="w-full px-5 py-3 bg-surface-container-highest border-none rounded-xl text-on-surface placeholder:text-outline focus:ring-0 transition-all" 
+                    type="password"
+                    name="password"
+                    value={password}
+                    onChange={onChange}
+                    placeholder="••••••••" 
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant block ml-1">Confirm Password</label>
+                <div className="relative">
+                  <input 
+                    className="w-full px-5 py-3 bg-surface-container-highest border-none rounded-xl text-on-surface placeholder:text-outline focus:ring-0 transition-all" 
+                    type="password"
+                    name="confirmPassword"
+                    value={confirmPassword}
+                    onChange={onChange}
+                    placeholder="••••••••" 
+                    required
+                  />
+                </div>
+              </div>
+
+              <button 
+                className={`w-full bg-gradient-to-br from-primary to-primary-container py-4 rounded-xl text-on-primary font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-all duration-200 mt-4 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`} 
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </button>
+            </form>
+
+            <div className="mt-8 text-center">
+              <p className="text-on-surface-variant font-medium">Already have an account? 
+                <Link className="text-primary font-bold ml-1 hover:underline underline-offset-4" to="/login">Sign In</Link>
+              </p>
+            </div>
           </div>
-        )}
-
-        <form onSubmit={onSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={username}
-              onChange={onChange}
-              required
-              placeholder="Choose a username"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={email}
-              onChange={onChange}
-              required
-              placeholder="Enter your email"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={password}
-              onChange={onChange}
-              required
-              placeholder="Create a password"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={confirmPassword}
-              onChange={onChange}
-              required
-              placeholder="Confirm your password"
-            />
-          </div>
-
-          <button 
-            type="submit" 
-            className="auth-btn"
-            disabled={loading}
-          >
-            {loading ? 'Creating Account...' : 'Create Account'}
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          <p>
-            Already have an account? <Link to="/login">Sign in here</Link>
-          </p>
-        </div>
-      </div>
+        </motion.div>
+      </main>
     </div>
   );
 };

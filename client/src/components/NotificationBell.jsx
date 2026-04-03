@@ -9,11 +9,16 @@ const NotificationBell = ({ socket }) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
+  const notificationsApi = API_ENDPOINTS.NOTIFICATIONS;
 
   const fetchNotifications = useCallback(async () => {
+    if (!notificationsApi?.LIST) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(API_ENDPOINTS.NOTIFICATIONS.LIST, {
+      const res = await axios.get(notificationsApi.LIST, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(res.data);
@@ -21,7 +26,7 @@ const NotificationBell = ({ socket }) => {
     } catch (err) {
       console.error('Error fetching notifications:', err);
     }
-  }, []);
+  }, [notificationsApi]);
 
   useEffect(() => {
     fetchNotifications(); // eslint-disable-line react-hooks/set-state-in-effect
@@ -37,9 +42,13 @@ const NotificationBell = ({ socket }) => {
   }, [socket, fetchNotifications]);
 
   const markAsRead = async (id) => {
+    if (!notificationsApi?.READ) {
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
-      await axios.put(API_ENDPOINTS.NOTIFICATIONS.READ(id), {}, {
+      await axios.put(notificationsApi.READ(id), {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));

@@ -1,11 +1,12 @@
 /* Global Theme System */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
 
 /* 1. Base / Shared Variables */
 :root {
   /* Typography */
-  --font-display: 'Poppins', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-label: 'Manrope', sans-serif;
   
   /* Spacing */
   --space-xs: 0.25rem;
@@ -124,15 +125,58 @@
   --focus-ring: 0 0 0 4px rgba(99, 102, 241, 0.3);
 }
 
-/* 4. Vibrant Theme (Updated to be cleaner) */
-.theme-vibrant {
-  --color-primary: #FF3E6C;
-  --color-primary-hover: #E7355F;
-  --bg-primary: #FFF0F5;
-  --bg-secondary: #FFFFFF;
-  --text-primary: #2D3436;
-  --radius-md: 1rem;
-  --radius-lg: 1.5rem;
+/* 4. Kinetic Flow Theme (New Default) */
+:root, .theme-kinetic {
+  /* Brand Colors - Kinetic Flow Strategy */
+  --color-primary: #4647d3;
+  --color-primary-container: #9396ff;
+  --color-primary-dim: #3939c7;
+  --color-on-primary: #f4f1ff;
+  
+  --color-secondary: #00675d;
+  --color-secondary-container: #6df5e1;
+  --color-on-secondary: #c0fff3;
+  
+  --color-tertiary: #963776;
+  --color-tertiary-container: #ff8ed2;
+  
+  --color-error: #b41340;
+  --color-error-container: #f74b6d;
+
+  /* Backgrounds & Surfaces */
+  --bg-primary: #faf4ff;
+  --bg-secondary: #f4eeff; /* surface_container_low */
+  --bg-tertiary: #ece4ff;  /* surface_container */
+  --bg-elevated: #ffffff;  /* surface_container_lowest */
+  --bg-overlay: rgba(48, 41, 80, 0.4); /* on_surface at 40% */
+  --bg-hover: #e6deff;     /* surface_container_high */
+
+  /* Text */
+  --text-primary: #302950;   /* on_surface */
+  --text-secondary: #5e5680; /* on_surface_variant */
+  --text-muted: #79719d;     /* outline */
+  --text-inverse: #ffffff;
+
+  /* Borders & Outlines */
+  --border-color: #b0a7d6;   /* outline_variant */
+  --border-focus: var(--color-primary);
+  --border-width: 1.5px;
+
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-pill: 9999px;
+
+  /* Shadows - Kinetic ambient style */
+  --shadow-sm: 0 4px 6px -1px rgba(48, 41, 80, 0.05);
+  --shadow-md: 0 10px 15px -3px rgba(48, 41, 80, 0.06);
+  --shadow-lg: 0 20px 25px -5px rgba(48, 41, 80, 0.08);
+  --shadow-xl: 0 24px 32px -8px rgba(48, 41, 80, 0.1);
+
+  /* Focus Ring */
+  --focus-ring: 0 0 0 4px rgba(70, 71, 211, 0.2);
 }
 
 /* Legacy & Utility Mappings */

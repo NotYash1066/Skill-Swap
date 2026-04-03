@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-const ThemeContext = createContext();
+export const ThemeContext = createContext(null);
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
@@ -12,9 +12,9 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  // Current supported themes: 'vibrant', 'modern'
+  // Current supported themes: 'kinetic', 'modern'
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'modern';
+    return localStorage.getItem('theme') || 'kinetic';
   });
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -30,7 +30,7 @@ export const ThemeProvider = ({ children }) => {
     const root = document.documentElement;
     
     // Remove all theme classes
-    root.classList.remove('theme-vibrant', 'theme-modern', 'theme-dark', 'dark-theme', 'dark');
+    root.classList.remove('theme-vibrant', 'theme-modern', 'theme-kinetic', 'theme-dark', 'dark-theme', 'dark');
     
     // Add current theme class
     root.classList.add(`theme-${theme}`);
@@ -48,7 +48,7 @@ export const ThemeProvider = ({ children }) => {
   };
 
   const cycleTheme = () => {
-    setTheme(prev => (prev === 'vibrant' ? 'modern' : 'vibrant'));
+    setTheme(prev => (prev === 'kinetic' ? 'modern' : 'kinetic'));
   };
 
   const value = {
