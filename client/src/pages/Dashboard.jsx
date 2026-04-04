@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { motion } from 'framer-motion';
 import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
 import Navbar from '../components/common/Navbar';
+import { clearAuthState, notifyAuthStateChange } from '../utils/auth';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -38,11 +39,12 @@ const Dashboard = () => {
     } catch (err) {
       console.error('Error fetching user data:', err);
       if (err.response?.status === 401) {
-        localStorage.removeItem('token');
+        clearAuthState();
+        notifyAuthStateChange();
         navigate('/login');
-      } else {
-        setError('We could not load your profile right now. Please try again.');
+        return;
       }
+      setError('We could not load your profile right now. Please try again.');
     } finally {
       setLoading(false);
     }

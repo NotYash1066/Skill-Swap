@@ -1,19 +1,34 @@
-import React from 'react';
+import axios from 'axios';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../../config/api';
 import ThemeToggle from '../ThemeToggle';
 import NotificationBell from '../NotificationBell';
-import { notifyAuthStateChange } from '../../utils/auth';
+import { clearAuthState, notifyAuthStateChange } from '../../utils/auth';
 
 const Navbar = ({ user, socket }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    notifyAuthStateChange();
-    navigate('/login', { replace: true });
+  const handleLogout = async () => {
+    const token = localStorage.getItem('token');
+    const refreshToken = localStorage.getItem('refreshToken');
+
+    try {
+      if (token || refreshToken) {
+        await axios.post(
+          API_ENDPOINTS.AUTH.LOGOUT,
+          { refreshToken },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+    } catch (error) {
+      console.error('Logout request failed:', error);
+    } finally {
+      clearAuthState();
+      notifyAuthStateChange();
+      navigate('/login', { replace: true });
+    }
   };
 
   return (

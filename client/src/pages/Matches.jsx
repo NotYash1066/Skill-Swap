@@ -4,6 +4,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { API_ENDPOINTS } from '../config/api';
 import Navbar from '../components/common/Navbar';
+import { clearAuthState, notifyAuthStateChange } from '../utils/auth';
 
 const ensureArray = (value) => Array.isArray(value) ? value : [];
 
@@ -42,12 +43,12 @@ const Matches = () => {
       setFeaturedMatch(potential[0] ?? null);
       setMatches(potential.slice(1));
     } catch (err) {
-      console.error('Error fetching matches:', err);
-      if (err.response?.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate('/login');
-        return;
+		console.error('Error fetching matches:', err);
+		if (err.response?.status === 401) {
+			clearAuthState();
+			notifyAuthStateChange();
+			navigate('/login');
+			return;
       }
 
       setPotentialMatches([]);
