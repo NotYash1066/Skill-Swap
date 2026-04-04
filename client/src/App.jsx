@@ -7,11 +7,13 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import GlobalVideoCall from "./components/video/GlobalVideoCall";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
 import ProfileSettings from "./pages/ProfileSettings";
-import { AUTH_STATE_CHANGE_EVENT } from "./utils/auth";
+import { AUTH_STATE_CHANGE_EVENT, clearAuthState, notifyAuthStateChange, storeAuthTokens } from "./utils/auth";
 import "./styles/App.css";
 import "./styles/themes.css";
 
@@ -25,13 +27,35 @@ function App() {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000,
       });
-      return response.data.success;
+      return { valid: response.data.success, definitiveFailure: !response.data.success };
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        return false;
+        return { valid: false, definitiveFailure: true };
       }
       console.error("Token verification failed:", error.message);
-      return false;
+      return { valid: false, definitiveFailure: false };
+    }
+  }, []);
+
+  const refreshAccessToken = useCallback(async (refreshToken) => {
+    try {
+      const response = await axios.post(
+        "/api/auth/refresh-token",
+        { refreshToken },
+        { timeout: 5000 }
+      );
+
+      return { token: response.data.token, definitiveFailure: true };
+    } catch (error) {
+      if (error.response?.status === 401) {
+        return { token: null, definitiveFailure: true };
+      }
+
+      if (error.response?.status !== 401) {
+        console.error("Token refresh failed:", error.message);
+      }
+
+      return { token: null, definitiveFailure: false };
     }
   }, []);
 
@@ -40,22 +64,53 @@ function App() {
       setLoading(true);
     }
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setIsAuthenticated(false);
-      setLoading(false);
-      return;
-    }
+		const token = localStorage.getItem("token");
+		const refreshToken = localStorage.getItem("refreshToken");
+		if (!token) {
+		  setIsAuthenticated(false);
+		  setLoading(false);
+		  return;
+		}
 
-    const isValid = await verifyToken(token);
-    setIsAuthenticated(isValid);
+		const verificationResult = await verifyToken(token);
+		let isValid = verificationResult.valid;
 
-    if (!isValid) {
-      localStorage.removeItem("token");
-    }
+		if (!isValid && !verificationResult.definitiveFailure) {
+		  setIsAuthenticated(true);
+		  setLoading(false);
+		  return;
+		}
 
-    setLoading(false);
-  }, [verifyToken]);
+		if (!isValid && refreshToken) {
+		  const refreshResult = await refreshAccessToken(refreshToken);
+
+		  if (refreshResult.token) {
+			const newToken = refreshResult.token;
+			storeAuthTokens({ token: newToken, refreshToken });
+			const refreshedVerificationResult = await verifyToken(newToken);
+			isValid = refreshedVerificationResult.valid;
+
+			if (!isValid && !refreshedVerificationResult.definitiveFailure) {
+			  setIsAuthenticated(true);
+			  setLoading(false);
+			  return;
+			}
+		  } else if (!refreshResult.definitiveFailure) {
+			setIsAuthenticated(true);
+			setLoading(false);
+			return;
+		  }
+		}
+
+		setIsAuthenticated(isValid);
+
+		if (!isValid) {
+		  clearAuthState();
+		  notifyAuthStateChange();
+		}
+
+		setLoading(false);
+	  }, [refreshAccessToken, verifyToken]);
 
   useEffect(() => {
     const initialSyncId = window.setTimeout(() => {
@@ -67,9 +122,11 @@ function App() {
     };
 
     const handleStorage = (event) => {
-      if (!event.key || event.key === "token") {
-        void syncAuthState();
+      if (event.key && event.key !== "token" && event.key !== "refreshToken") {
+        return;
       }
+
+      void syncAuthState();
     };
 
     window.addEventListener(AUTH_STATE_CHANGE_EVENT, handleAuthStateChange);
@@ -95,7 +152,6 @@ function App() {
             v7_relativeSplatPath: true 
           }}>
           <div className="App">
-            {/* Global video call overlay mounted at app level */}
             <GlobalVideoCall />
             <Routes>
               <Route 
@@ -105,6 +161,14 @@ function App() {
               <Route 
                 path="/register" 
                 element={!isAuthenticated ? <Register /> : <Navigate to="/dashboard" />} 
+              />
+              <Route
+                path="/forgot-password"
+                element={<ForgotPassword />}
+              />
+              <Route
+                path="/reset-password/:token"
+                element={<ResetPassword />}
               />
               <Route 
                 path="/dashboard" 

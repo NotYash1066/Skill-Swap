@@ -5,7 +5,6 @@ import axios from 'axios';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AUTH_STATE_CHANGE_EVENT } from './utils/auth';
 
-// Mock axios
 vi.mock('axios');
 
 vi.mock('./contexts/ThemeContext', () => ({
@@ -48,7 +47,6 @@ vi.mock('./pages/ProfileSettings', () => ({
   default: () => <div>Profile Settings Page</div>,
 }));
 
-// Mock socket.io-client to avoid connection errors in providers
 vi.mock('socket.io-client', () => ({
   default: () => ({
     on: vi.fn(),
@@ -59,7 +57,6 @@ vi.mock('socket.io-client', () => ({
   }),
 }));
 
-// Mock peerjs
 vi.mock('peerjs', () => ({
   Peer: vi.fn().mockImplementation(() => ({
     on: vi.fn(),
@@ -79,26 +76,20 @@ describe('App Component Auth Check', () => {
   });
 
   it('should not log an error to console when verify-token returns 401', async () => {
-    // Setup
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     localStorage.setItem('token', 'fake-token');
-    
-    // Simulate 401 error
+
     axios.get.mockRejectedValue({
       message: "Request failed with status code 401",
       response: { status: 401, data: { message: 'Unauthorized' } }
     });
 
-    // Act
     render(<App />);
 
-    // Wait for the effect to run and axios to be called
     await waitFor(() => {
         expect(axios.get).toHaveBeenCalledWith("/api/auth/verify-token", expect.any(Object));
     });
 
-    // Assert: We expect NO console.error to be called for a 401
-    // This expects the test to FAIL if the code logs the error
     expect(consoleSpy).not.toHaveBeenCalled();
   });
 
@@ -123,6 +114,35 @@ describe('App Component Auth Check', () => {
     });
 
     await waitFor(() => {
+      expect(screen.getByText('Dashboard Page')).toBeInTheDocument();
+    });
+  });
+
+  it('should refresh the access token when verification returns 401 and a refresh token exists', async () => {
+    localStorage.setItem('token', 'expired-token');
+    localStorage.setItem('refreshToken', 'valid-refresh-token');
+    window.history.pushState({}, '', '/dashboard');
+
+    axios.get
+      .mockRejectedValueOnce({
+        response: { status: 401, data: { message: 'Token expired' } },
+      })
+      .mockResolvedValueOnce({
+        data: { success: true },
+      });
+
+    axios.post.mockResolvedValueOnce({
+      data: { token: 'fresh-token' },
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith('/api/auth/refresh-token', { refreshToken: 'valid-refresh-token' }, expect.any(Object));
+    });
+
+    await waitFor(() => {
+      expect(localStorage.getItem('token')).toBe('fresh-token');
       expect(screen.getByText('Dashboard Page')).toBeInTheDocument();
     });
   });
