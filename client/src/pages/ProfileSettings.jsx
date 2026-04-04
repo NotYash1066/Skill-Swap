@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
 import { Button, Card, Input } from '../components/common';
+import { clearAuthState, notifyAuthStateChange } from '../utils/auth';
 import '../styles/ProfileSettings.css';
 
 const ProfileSettings = () => {
@@ -71,12 +72,14 @@ const ProfileSettings = () => {
         city: response.data.location?.city || '',
         availability: response.data.availability || []
       });
-    } catch (err) {
-      console.error('Error fetching user:', err);
-      if (err.response?.status === 401) {
-        navigate('/login');
-      }
-    }
+	} catch (err) {
+	  console.error('Error fetching user:', err);
+	  if (err.response?.status === 401) {
+		clearAuthState();
+		notifyAuthStateChange();
+		navigate('/login');
+	  }
+	}
   }, [navigate]);
 
   useEffect(() => {
@@ -127,10 +130,16 @@ const ProfileSettings = () => {
       });
       setMessage({ type: 'success', text: 'Profile updated successfully!' });
       setTimeout(() => navigate('/dashboard'), 1500);
-    } catch (err) {
-      console.error('Error updating profile:', err);
-      setMessage({ type: 'error', text: 'Failed to update profile' });
-    } finally {
+	} catch (err) {
+	  console.error('Error updating profile:', err);
+	  if (err.response?.status === 401) {
+		clearAuthState();
+		notifyAuthStateChange();
+		navigate('/login');
+		return;
+	  }
+	  setMessage({ type: 'error', text: 'Failed to update profile' });
+	} finally {
       setSaving(false);
     }
   };
