@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const { check, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
@@ -92,6 +93,8 @@ router.post(
 				process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET,
 				{ expiresIn: "7d" }
 			);
+			user.refreshToken = refreshToken;
+			await user.save();
 			return res.json({ success: true, token, refreshToken });
 		} catch (err) {
 			return next(err);
@@ -152,6 +155,8 @@ router.post(
 				process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET,
 				{ expiresIn: "7d" }
 			);
+			user.refreshToken = refreshToken;
+			await user.save();
 			return res.json({ success: true, token, refreshToken });
 		} catch (err) {
 			return next(err);
@@ -343,12 +348,13 @@ router.post("/forgot-password", authLimiter, async (req, res, next) => {
 			});
 		}
 
-		// Generate secure reset token
-		const resetToken = jwt.sign(
-			{ userId: user._id, type: "password_reset" },
-			process.env.JWT_SECRET,
-			{ expiresIn: "1h" }
-		);
+		const resetToken = crypto.randomBytes(20).toString("hex");
+		user.resetPasswordToken = crypto
+			.createHash("sha256")
+			.update(resetToken)
+			.digest("hex");
+		user.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+		await user.save();
 
 		// Send email
 		const transporter = getTransporter();
@@ -361,11 +367,11 @@ router.post("/forgot-password", authLimiter, async (req, res, next) => {
           <h2>Password Reset Request</h2>
           <p>You requested a password reset for your SkillSwap account.</p>
           <p>Click the link below to reset your password:</p>
-          <a href="${process.env.CLIENT_URL}/reset-password?token=${resetToken}" 
+			  <a href="${process.env.CLIENT_URL}/reset-password/${resetToken}" 
              style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
             Reset Password
           </a>
-          <p>This link will expire in 1 hour.</p>
+          <p>This link will expire in 10 minutes.</p>
           <p>If you didn't request this, please ignore this email.</p>
         </div>
       `,
@@ -407,6 +413,10 @@ router.post("/refresh-token", authLimiter, async (req, res, next) => {
 			return res.status(401).json({ msg: "User not found" });
 		}
 
+		if (user.refreshToken !== refreshToken) {
+			return res.status(401).json({ msg: "Invalid refresh token" });
+		}
+
 		// Generate new access token
 		const payload = {
 			user: {
@@ -421,6 +431,56 @@ router.post("/refresh-token", authLimiter, async (req, res, next) => {
 	}
 });
 
+router.post("/logout", async (req, res, next) => {
+	try {
+		const { refreshToken } = req.body || {};
+		let userId = null;
+
+		const authHeader = req.header("Authorization") || req.header("x-auth-token");
+		const accessToken = authHeader?.startsWith("Bearer ")
+			? authHeader.replace("Bearer ", "")
+			: authHeader;
+
+		if (accessToken) {
+			try {
+				const decodedAccessToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+				userId = decodedAccessToken.user?.id || null;
+			} catch (error) {
+				userId = null;
+			}
+		}
+
+		if (!userId && refreshToken) {
+			try {
+				const decodedRefreshToken = jwt.verify(
+					refreshToken,
+					process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET
+				);
+				userId = decodedRefreshToken.user?.id || null;
+			} catch (error) {
+				userId = null;
+			}
+		}
+
+		if (!userId) {
+			return res.status(401).json({ success: false, msg: "Invalid logout credentials" });
+		}
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(401).json({ success: false, msg: "User not found" });
+		}
+
+		if (refreshToken && user.refreshToken && user.refreshToken !== refreshToken) {
+			return res.status(401).json({ success: false, msg: "Invalid refresh token" });
+		}
+
+		user.refreshToken = null;
+		await user.save();
+		res.json({ success: true, message: "Logged out successfully" });
+	} catch (err) {
+		return next(err);
+	}
+});
+
 module.exports = router;
-
-

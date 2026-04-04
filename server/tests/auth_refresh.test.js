@@ -47,7 +47,11 @@ describe('Auth Refresh Logic', () => {
             
         expect(res.status).toBe(200);
         expect(res.body).toHaveProperty('token');
-        expect(res.body).toHaveProperty('refreshToken'); // This should FAIL now
+        expect(res.body).toHaveProperty('refreshToken');
+        expect(User.findOne).toHaveBeenCalledWith({ email: 'test@example.com' });
+        const savedUser = await User.findOne.mock.results[0].value;
+        expect(savedUser.refreshToken).toBe(res.body.refreshToken);
+        expect(savedUser.save).toHaveBeenCalled();
     });
 
     it('should allow refreshing access token with valid refresh token', async () => {
@@ -56,6 +60,12 @@ describe('Auth Refresh Logic', () => {
             'refreshsecret', // Different secret
             { expiresIn: '7d' }
         );
+
+        User.findById.mockResolvedValueOnce({
+            id: userId,
+            _id: userId,
+            refreshToken
+        });
 
         const res = await request(app)
             .post('/api/auth/refresh-token')
