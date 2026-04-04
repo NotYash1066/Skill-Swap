@@ -4,7 +4,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { API_ENDPOINTS } from '../config/api';
 import ThemeToggle from '../components/ThemeToggle';
-import { notifyAuthStateChange } from '../utils/auth';
+import { notifyAuthStateChange, storeAuthTokens } from '../utils/auth';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -32,9 +32,9 @@ const Login = () => {
         password
       });
 
-      localStorage.setItem('token', res.data.token);
-      notifyAuthStateChange();
-      navigate('/dashboard', { replace: true });
+		storeAuthTokens({ token: res.data.token, refreshToken: res.data.refreshToken });
+		notifyAuthStateChange();
+		navigate('/dashboard', { replace: true });
     } catch (err) {
       if (!err.response || err.response.status !== 400) {
         console.error('Login error:', err);
@@ -119,7 +119,7 @@ const Login = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center px-1">
                   <label htmlFor="login-password" className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant">Password</label>
-                  <a className="font-label text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary-dim transition-colors" href="#">Forgot Password?</a>
+                  <Link className="font-label text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary-dim transition-colors" to="/forgot-password">Forgot Password?</Link>
                 </div>
                 <div className="relative input-container">
                   <input 

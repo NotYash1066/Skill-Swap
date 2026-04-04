@@ -4,7 +4,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { API_ENDPOINTS } from '../config/api';
 import ThemeToggle from '../components/ThemeToggle';
-import { notifyAuthStateChange } from '../utils/auth';
+import { notifyAuthStateChange, storeAuthTokens } from '../utils/auth';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -41,9 +41,9 @@ const Register = () => {
         password
       });
 
-      localStorage.setItem('token', res.data.token);
-      notifyAuthStateChange();
-      navigate('/dashboard', { replace: true });
+		storeAuthTokens({ token: res.data.token, refreshToken: res.data.refreshToken });
+		notifyAuthStateChange();
+		navigate('/dashboard', { replace: true });
     } catch (err) {
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
