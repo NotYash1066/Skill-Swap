@@ -1,9 +1,9 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 const app = require('../testApp');
 const User = require('../models/User');
 
-// Mock nodemailer
 jest.mock('nodemailer', () => ({
   createTransport: jest.fn().mockReturnValue({
     sendMail: jest.fn().mockResolvedValue(true)
@@ -65,6 +65,33 @@ describe('Auth Extensions', () => {
         .send({});
 
       expect(res.statusCode).toBe(401);
+    });
+  });
+
+  describe('PUT /api/auth/reset-password/:resettoken', () => {
+    it('should reset password and revoke the stored refresh token', async () => {
+      const rawResetToken = 'valid-reset-token';
+      const resetPasswordToken = crypto.createHash('sha256').update(rawResetToken).digest('hex');
+
+      const user = await User.create({
+        username: 'resetuser',
+        email: 'reset@example.com',
+        password: 'hashedpassword',
+        resetPasswordToken,
+        resetPasswordExpire: new Date(Date.now() + 5 * 60 * 1000),
+        refreshToken: 'persisted-refresh-token'
+      });
+
+      const res = await request(app)
+        .put(`/api/auth/reset-password/${rawResetToken}`)
+        .send({ password: 'NewPassword1' });
+
+      expect(res.statusCode).toBe(200);
+      expect(res.body.success).toBe(true);
+
+      const updatedUser = await User.findById(user._id);
+      expect(updatedUser.refreshToken).toBeNull();
+      expect(updatedUser.resetPasswordToken).toBeUndefined();
     });
   });
 });
