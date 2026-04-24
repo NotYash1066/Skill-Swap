@@ -11,6 +11,7 @@ const { validateObjectId } = require("../middleware/inputValidation");
 const { LIMITS } = require("../constants");
 const upload = require("../middleware/upload");
 const nodemailer = require("nodemailer");
+const { generateAccessToken, generateRefreshToken } = require("../utils/generateTokens");
 
 // Create transporter once (singleton pattern for efficiency)
 let transporter = null;
@@ -81,18 +82,8 @@ router.post(
 
 			await user.save();
 
-			// Create JWT token (synchronously so errors are caught by this try/catch)
-			const payload = {
-				user: {
-					id: user.id,
-				},
-			};
-			const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" }); // Short-lived access token
-			const refreshToken = jwt.sign(
-				payload,
-				process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET,
-				{ expiresIn: "7d" }
-			);
+			const token = generateAccessToken(user);
+			const refreshToken = generateRefreshToken(user);
 			user.refreshToken = refreshToken;
 			await user.save();
 			return res.json({ success: true, token, refreshToken });
@@ -143,18 +134,8 @@ router.post(
 				});
 			}
 
-			// Create JWT token (synchronously so errors are caught by this try/catch)
-			const payload = {
-				user: {
-					id: user.id,
-				},
-			};
-			const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" }); // Short-lived access token
-			const refreshToken = jwt.sign(
-				payload,
-				process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET,
-				{ expiresIn: "7d" }
-			);
+			const token = generateAccessToken(user);
+			const refreshToken = generateRefreshToken(user);
 			user.refreshToken = refreshToken;
 			await user.save();
 			return res.json({ success: true, token, refreshToken });
@@ -177,9 +158,8 @@ router.get("/me", auth, async (req, res, next) => {
 
 // @route   GET /api/auth/verify-token
 // @desc    Verify JWT token
-router.get("/verify-token", (req, res) => {
+router.get("/verify-token", async (req, res, next) => {
 	try {
-		const jwtSecretKey = process.env.JWT_SECRET;
 		const authHeader = req.headers.authorization;
 
 		if (!authHeader) {
@@ -196,9 +176,25 @@ router.get("/verify-token", (req, res) => {
 			});
 		}
 
-		const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+		const token = authHeader.substring(7);
+		const verified = jwt.verify(token, process.env.JWT_SECRET);
+		const user = await User.findById(verified.user?.id).select("-password");
 
-		const verified = jwt.verify(token, jwtSecretKey);
+		if (!user) {
+			return res.status(401).json({
+				success: false,
+				message: "Token user not found",
+			});
+		}
+
+		const tokenVersion = verified.user?.tokenVersion || 0;
+		if (tokenVersion !== (user.tokenVersion || 0)) {
+			return res.status(401).json({
+				success: false,
+				message: "Token has been revoked",
+			});
+		}
+
 		res.json({
 			success: true,
 			data: verified,
@@ -219,11 +215,7 @@ router.get("/verify-token", (req, res) => {
 				error: err.message,
 			});
 		}
-		res.status(400).json({
-			success: false,
-			message: "Token verification failed",
-			error: err.message,
-		});
+		return next(err);
 	}
 });
 
@@ -396,14 +388,15 @@ router.post("/refresh-token", authLimiter, async (req, res, next) => {
 		// Verify refresh token
 		let decoded;
 		try {
-			decoded = jwt.verify(
-				refreshToken, 
-				process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET
-			);
+			decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 		} catch (err) {
 			if (err instanceof jwt.TokenExpiredError) {
 				return res.status(401).json({ msg: "Refresh token expired" });
 			}
+			return res.status(401).json({ msg: "Invalid refresh token" });
+		}
+
+		if (!decoded.user?.id) {
 			return res.status(401).json({ msg: "Invalid refresh token" });
 		}
 
@@ -417,15 +410,17 @@ router.post("/refresh-token", authLimiter, async (req, res, next) => {
 			return res.status(401).json({ msg: "Invalid refresh token" });
 		}
 
-		// Generate new access token
-		const payload = {
-			user: {
-				id: user.id,
-			},
-		};
-		const newToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "15m" });
-        // Optionally rotate refresh token here, but for now just return access token
-		res.json({ success: true, token: newToken });
+		const tokenVersion = decoded.user?.tokenVersion || 0;
+		if (tokenVersion !== (user.tokenVersion || 0)) {
+			return res.status(401).json({ msg: "Refresh token has been revoked" });
+		}
+
+		const newToken = generateAccessToken(user);
+		const newRefreshToken = generateRefreshToken(user);
+		user.refreshToken = newRefreshToken;
+		await user.save();
+
+		res.json({ success: true, token: newToken, refreshToken: newRefreshToken });
 	} catch (err) {
 		return next(err);
 	}
@@ -452,10 +447,7 @@ router.post("/logout", async (req, res, next) => {
 
 		if (!userId && refreshToken) {
 			try {
-				const decodedRefreshToken = jwt.verify(
-					refreshToken,
-					process.env.REFRESH_TOKEN_SECRET || process.env.JWT_SECRET
-				);
+				const decodedRefreshToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 				userId = decodedRefreshToken.user?.id || null;
 			} catch (error) {
 				userId = null;
@@ -476,6 +468,7 @@ router.post("/logout", async (req, res, next) => {
 		}
 
 		user.refreshToken = null;
+		user.tokenVersion = (user.tokenVersion || 0) + 1;
 		await user.save();
 		res.json({ success: true, message: "Logged out successfully" });
 	} catch (err) {

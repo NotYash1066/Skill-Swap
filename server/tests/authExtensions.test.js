@@ -79,7 +79,8 @@ describe('Auth Extensions', () => {
         password: 'hashedpassword',
         resetPasswordToken,
         resetPasswordExpire: new Date(Date.now() + 5 * 60 * 1000),
-        refreshToken: 'persisted-refresh-token'
+        refreshToken: 'persisted-refresh-token',
+        tokenVersion: 0
       });
 
       const res = await request(app)
@@ -91,6 +92,7 @@ describe('Auth Extensions', () => {
 
       const updatedUser = await User.findById(user._id);
       expect(updatedUser.refreshToken).toBeNull();
+      expect(updatedUser.tokenVersion).toBe(1);
       expect(updatedUser.resetPasswordToken).toBeUndefined();
     });
   });

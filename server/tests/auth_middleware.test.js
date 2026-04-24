@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
+const User = require('../models/User');
 
 jest.mock('jsonwebtoken');
+jest.mock('../models/User');
 
 describe('Auth Middleware Error Handling', () => {
   let req;
@@ -63,6 +65,23 @@ describe('Auth Middleware Error Handling', () => {
     expect(jwt.verify).toHaveBeenCalledWith('dummy_token', process.env.JWT_SECRET);
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ success: false, errors: ['Authentication failed'] });
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should reject tokens with stale token versions', async () => {
+    jwt.verify.mockReturnValue({ user: { id: 'user-id', tokenVersion: 1 } });
+    User.findById.mockReturnValue({
+      select: jest.fn().mockResolvedValue({
+        _id: { toString: () => 'user-id' },
+        tokenVersion: 2,
+        toObject: () => ({ tokenVersion: 2 })
+      })
+    });
+
+    await auth(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ success: false, errors: ['Token has been revoked'] });
     expect(next).not.toHaveBeenCalled();
   });
 });

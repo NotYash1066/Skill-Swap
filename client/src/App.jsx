@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
 import ProfileSettings from "./pages/ProfileSettings";
+import { API_ENDPOINTS } from "./config/api";
 import { AUTH_STATE_CHANGE_EVENT, clearAuthState, notifyAuthStateChange, storeAuthTokens } from "./utils/auth";
 import "./styles/App.css";
 import "./styles/themes.css";
@@ -23,7 +24,7 @@ function App() {
 
   const verifyToken = useCallback(async (token) => {
     try {
-      const response = await axios.get("/api/auth/verify-token", {
+      const response = await axios.get(API_ENDPOINTS.AUTH.VERIFY_TOKEN, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000,
       });
@@ -40,12 +41,16 @@ function App() {
   const refreshAccessToken = useCallback(async (refreshToken) => {
     try {
       const response = await axios.post(
-        "/api/auth/refresh-token",
+        API_ENDPOINTS.AUTH.REFRESH_TOKEN,
         { refreshToken },
         { timeout: 5000 }
       );
 
-      return { token: response.data.token, definitiveFailure: true };
+      return {
+        token: response.data.token,
+        refreshToken: response.data.refreshToken,
+        definitiveFailure: true
+      };
     } catch (error) {
       if (error.response?.status === 401) {
         return { token: null, definitiveFailure: true };
@@ -86,7 +91,8 @@ function App() {
 
 		  if (refreshResult.token) {
 			const newToken = refreshResult.token;
-			storeAuthTokens({ token: newToken, refreshToken });
+			const newRefreshToken = refreshResult.refreshToken || refreshToken;
+			storeAuthTokens({ token: newToken, refreshToken: newRefreshToken });
 			const refreshedVerificationResult = await verifyToken(newToken);
 			isValid = refreshedVerificationResult.valid;
 

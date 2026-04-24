@@ -5,6 +5,8 @@ const User = require('../models/User');
 
 describe('Auth API', () => {
   beforeAll(async () => {
+    process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-access-secret';
+    process.env.REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'test-refresh-secret';
     await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/SkillSwapTest');
   });
 

@@ -3,6 +3,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import App from './App';
 import axios from 'axios';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { API_ENDPOINTS } from './config/api';
 import { AUTH_STATE_CHANGE_EVENT } from './utils/auth';
 
 vi.mock('axios');
@@ -87,7 +88,7 @@ describe('App Component Auth Check', () => {
     render(<App />);
 
     await waitFor(() => {
-        expect(axios.get).toHaveBeenCalledWith("/api/auth/verify-token", expect.any(Object));
+        expect(axios.get).toHaveBeenCalledWith(API_ENDPOINTS.AUTH.VERIFY_TOKEN, expect.any(Object));
     });
 
     expect(consoleSpy).not.toHaveBeenCalled();
@@ -110,7 +111,7 @@ describe('App Component Auth Check', () => {
     });
 
     await waitFor(() => {
-      expect(axios.get).toHaveBeenCalledWith('/api/auth/verify-token', expect.any(Object));
+      expect(axios.get).toHaveBeenCalledWith(API_ENDPOINTS.AUTH.VERIFY_TOKEN, expect.any(Object));
     });
 
     await waitFor(() => {
@@ -132,17 +133,18 @@ describe('App Component Auth Check', () => {
       });
 
     axios.post.mockResolvedValueOnce({
-      data: { token: 'fresh-token' },
+      data: { token: 'fresh-token', refreshToken: 'rotated-refresh-token' },
     });
 
     render(<App />);
 
     await waitFor(() => {
-      expect(axios.post).toHaveBeenCalledWith('/api/auth/refresh-token', { refreshToken: 'valid-refresh-token' }, expect.any(Object));
+      expect(axios.post).toHaveBeenCalledWith(API_ENDPOINTS.AUTH.REFRESH_TOKEN, { refreshToken: 'valid-refresh-token' }, expect.any(Object));
     });
 
     await waitFor(() => {
       expect(localStorage.getItem('token')).toBe('fresh-token');
+      expect(localStorage.getItem('refreshToken')).toBe('rotated-refresh-token');
       expect(screen.getByText('Dashboard Page')).toBeInTheDocument();
     });
   });
