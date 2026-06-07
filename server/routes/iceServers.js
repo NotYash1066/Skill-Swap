@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../utils/logger');
+const auth = require('../middleware/auth');
 
 /**
  * GET /api/ice-servers
@@ -24,7 +25,7 @@ const logger = require('../utils/logger');
 let cachedIceServers = null;
 let cacheExpiry = 0;
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const twilioSid = process.env.TWILIO_ACCOUNT_SID;
     const twilioToken = process.env.TWILIO_AUTH_TOKEN;
@@ -40,35 +41,47 @@ router.get('/', async (req, res) => {
       // Create a new token via Twilio STUN/TURN REST API
       // POST /2010-04-01/Accounts/{AccountSid}/Tokens.json
       const tokenUrl = `https://api.twilio.com/2010-04-01/Accounts/${twilioSid}/Tokens.json`;
-      const auth = Buffer.from(`${twilioSid}:${twilioToken}`).toString('base64');
+      const authHeader = Buffer.from(`${twilioSid}:${twilioToken}`).toString('base64');
 
-      const response = await fetch(tokenUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${auth}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'Ttl=3600', // 1 hour TTL
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data.ice_servers && data.ice_servers.length > 0) {
-          // Normalize: Twilio returns both 'url' and 'urls', some with 'credential' not 'password'
-          // WebRTC standard expects 'urls' and 'username'/'credential'
-          const servers = data.ice_servers.map(s => ({
-            urls: s.urls || s.url,
-            username: s.username,
-            credential: s.credential,
-          }));
-          cachedIceServers = servers;
-          cacheExpiry = now + 50 * 60 * 1000; // 50 min TTL
-          logger.info(`Fetched fresh ICE servers from Twilio NTS (${servers.length} servers)`);
-          return res.json({ iceServers: servers, source: 'twilio' });
+      try {
+        const response = await fetch(tokenUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${authHeader}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: 'Ttl=3600',
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.ice_servers && data.ice_servers.length > 0) {
+            const servers = data.ice_servers.map(s => ({
+              urls: s.urls || s.url,
+              username: s.username,
+              credential: s.credential,
+            }));
+            cachedIceServers = servers;
+            cacheExpiry = now + 50 * 60 * 1000; // 50 min TTL
+            logger.info(`Fetched fresh ICE servers from Twilio NTS (${servers.length} servers)`);
+            return res.json({ iceServers: servers, source: 'twilio' });
+          }
+        } else {
+          const errText = await response.text();
+          logger.warn(`Twilio token creation failed: ${response.status} ${errText}`);
         }
-      } else {
-        const errText = await response.text();
-        logger.warn(`Twilio token creation failed: ${response.status} ${errText}`);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          logger.warn('Twilio NTS request timed out after 10s');
+        } else {
+          throw fetchError;
+        }
       }
     }
 

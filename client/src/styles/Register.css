@@ -1,0 +1,17 @@
+/* Register.css - Kinetic Flow Theme */
+@import './Login.css';
+
+.register-container {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .register-container {
+    grid-template-columns: 1fr 1.5fr;
+  }
+}
+
+.register-form-side {
+  max-height: 90vh;
+  overflow-y: auto;
+}

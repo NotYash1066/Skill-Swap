@@ -27,6 +27,7 @@ describe('Auth API', () => {
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('token');
+      expect(res.body).toHaveProperty('refreshToken');
     });
 
     it('should reject weak password', async () => {
@@ -53,6 +54,7 @@ describe('Auth API', () => {
 
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('token');
+      expect(res.body).toHaveProperty('refreshToken');
     });
 
     it('should reject invalid credentials', async () => {

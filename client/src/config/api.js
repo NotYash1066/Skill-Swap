@@ -4,7 +4,7 @@ export const API_ENDPOINTS = {
     LOGIN: `${API_BASE_URL}/api/auth/login`,
     REGISTER: `${API_BASE_URL}/api/auth/register`,
     FORGOT_PASSWORD: `${API_BASE_URL}/api/auth/forgot-password`,
-    RESET_PASSWORD: (token) => `${API_BASE_URL}/api/auth/reset-password/${token}`,
+    RESET_PASSWORD: (token) => `${API_BASE_URL}/api/auth/reset-password/${encodeURIComponent(token)}`,
     ME: `${API_BASE_URL}/api/auth/me`,
     VERIFY_TOKEN: `${API_BASE_URL}/api/auth/verify-token`,
     REFRESH_TOKEN: `${API_BASE_URL}/api/auth/refresh-token`,

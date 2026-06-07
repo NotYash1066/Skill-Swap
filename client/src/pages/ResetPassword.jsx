@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -15,9 +15,27 @@ const ResetPassword = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigateTimerRef = useRef(null);
+
+  // Clear the delayed-navigation timer on unmount
+  useEffect(() => {
+    return () => {
+      if (navigateTimerRef.current) {
+        window.clearTimeout(navigateTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const validatePassword = (password) => {
+    if (password.length < 8) return 'Password must be at least 8 characters.';
+    if (!/[A-Z]/.test(password)) return 'Password must contain an uppercase letter.';
+    if (!/[a-z]/.test(password)) return 'Password must contain a lowercase letter.';
+    if (!/[0-9]/.test(password)) return 'Password must contain a number.';
+    return null;
   };
 
   const handleSubmit = async (e) => {
@@ -27,6 +45,12 @@ const ResetPassword = () => {
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -40,7 +64,7 @@ const ResetPassword = () => {
       setSuccessMessage(res.data?.message || 'Password reset successful. Redirecting to sign in...');
       setFormData({ password: '', confirmPassword: '' });
 
-      window.setTimeout(() => {
+      navigateTimerRef.current = window.setTimeout(() => {
         navigate('/login', { replace: true });
       }, 1500);
     } catch (err) {

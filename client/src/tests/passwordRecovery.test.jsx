@@ -63,9 +63,8 @@ describe('Password recovery flow', () => {
       </MemoryRouter>
     );
 
-    const passwordInputs = screen.getAllByPlaceholderText('••••••••');
-    fireEvent.change(passwordInputs[0], { target: { value: 'NewPassword1' } });
-    fireEvent.change(passwordInputs[1], { target: { value: 'NewPassword1' } });
+    fireEvent.change(screen.getByLabelText(/New Password/i), { target: { value: 'NewPassword1' } });
+    fireEvent.change(screen.getByLabelText(/Confirm New Password/i), { target: { value: 'NewPassword1' } });
     fireEvent.click(screen.getByRole('button', { name: /Reset Password/i }));
 
     await waitFor(() => {

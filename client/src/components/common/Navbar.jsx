@@ -16,10 +16,14 @@ const Navbar = ({ user, socket }) => {
 
     try {
       if (token || refreshToken) {
+        const headers = {};
+        if (token) {
+          headers.Authorization = `Bearer ${token}`;
+        }
         await axios.post(
           API_ENDPOINTS.AUTH.LOGOUT,
           { refreshToken },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers }
         );
       }
     } catch (error) {

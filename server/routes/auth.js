@@ -426,7 +426,7 @@ router.post("/refresh-token", authLimiter, async (req, res, next) => {
 	}
 });
 
-router.post("/logout", async (req, res, next) => {
+router.post("/logout", authLimiter, async (req, res, next) => {
 	try {
 		const { refreshToken } = req.body || {};
 		let userId = null;
@@ -463,10 +463,9 @@ router.post("/logout", async (req, res, next) => {
 			return res.status(401).json({ success: false, msg: "User not found" });
 		}
 
-		if (refreshToken && user.refreshToken && user.refreshToken !== refreshToken) {
-			return res.status(401).json({ success: false, msg: "Invalid refresh token" });
-		}
-
+		// Invalidate tokens regardless of whether the refresh token matches.
+		// This handles the case where the user has logged in on another device
+		// and the refresh token in the DB has been rotated.
 		user.refreshToken = null;
 		user.tokenVersion = (user.tokenVersion || 0) + 1;
 		await user.save();

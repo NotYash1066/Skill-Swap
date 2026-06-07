@@ -28,11 +28,14 @@ function App() {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000,
       });
-      return { valid: response.data.success, definitiveFailure: !response.data.success };
+      // Token is valid — definitive success
+      return { valid: true, definitiveFailure: true };
     } catch (error) {
       if (error.response && error.response.status === 401) {
+        // Token is invalid — definitive failure
         return { valid: false, definitiveFailure: true };
       }
+      // Network/server error — not definitive, safe to retry
       console.error("Token verification failed:", error.message);
       return { valid: false, definitiveFailure: false };
     }
@@ -49,17 +52,14 @@ function App() {
       return {
         token: response.data.token,
         refreshToken: response.data.refreshToken,
-        definitiveFailure: true
+        definitiveFailure: false
       };
     } catch (error) {
       if (error.response?.status === 401) {
         return { token: null, definitiveFailure: true };
       }
 
-      if (error.response?.status !== 401) {
-        console.error("Token refresh failed:", error.message);
-      }
-
+      console.error("Token refresh failed:", error.message);
       return { token: null, definitiveFailure: false };
     }
   }, []);
@@ -170,11 +170,11 @@ function App() {
               />
               <Route
                 path="/forgot-password"
-                element={<ForgotPassword />}
+                element={!isAuthenticated ? <ForgotPassword /> : <Navigate to="/dashboard" />}
               />
               <Route
                 path="/reset-password/:token"
-                element={<ResetPassword />}
+                element={!isAuthenticated ? <ResetPassword /> : <Navigate to="/dashboard" />}
               />
               <Route 
                 path="/dashboard" 
