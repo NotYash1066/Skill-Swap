@@ -10,6 +10,10 @@ const mongoose = require('mongoose');
 jest.mock('../models/User');
 jest.mock('bcryptjs');
 
+// Use test-only secrets (not real credentials)
+const TEST_JWT_SECRET = 'test-access-secret';
+const TEST_REFRESH_SECRET = 'test-refresh-secret';
+
 describe('Auth Refresh Logic', () => {
     let app;
     let userId;
@@ -19,8 +23,8 @@ describe('Auth Refresh Logic', () => {
         app.use(express.json());
         app.use('/api/auth', authRoutes);
 
-        process.env.JWT_SECRET = 'test-access-secret';
-        process.env.REFRESH_TOKEN_SECRET = 'test-refresh-secret';
+        process.env.JWT_SECRET = TEST_JWT_SECRET;
+        process.env.REFRESH_TOKEN_SECRET = TEST_REFRESH_SECRET;
         userId = new mongoose.Types.ObjectId();
 
         User.findOne.mockResolvedValue({
@@ -55,8 +59,8 @@ describe('Auth Refresh Logic', () => {
         expect(savedUser.refreshToken).toBe(res.body.refreshToken);
         expect(savedUser.save).toHaveBeenCalled();
 
-        const decodedAccessToken = jwt.verify(res.body.token, process.env.JWT_SECRET);
-        const decodedRefreshToken = jwt.verify(res.body.refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const decodedAccessToken = jwt.verify(res.body.token, TEST_JWT_SECRET);
+        const decodedRefreshToken = jwt.verify(res.body.refreshToken, TEST_REFRESH_SECRET);
         expect(decodedAccessToken.user).toMatchObject({ id: userId.toString(), tokenVersion: 0 });
         expect(decodedRefreshToken.user).toMatchObject({ id: userId.toString(), tokenVersion: 0 });
     });
@@ -64,7 +68,7 @@ describe('Auth Refresh Logic', () => {
     it('should rotate refresh token when refreshing access token', async () => {
         const refreshToken = jwt.sign(
             { user: { id: userId.toString(), tokenVersion: 0 } },
-            process.env.REFRESH_TOKEN_SECRET,
+            TEST_REFRESH_SECRET,
             { expiresIn: '7d' }
         );
         const user = {
@@ -93,7 +97,7 @@ describe('Auth Refresh Logic', () => {
     it('should reject an old refresh token after rotation', async () => {
         const oldRefreshToken = jwt.sign(
             { user: { id: userId.toString(), tokenVersion: 0 } },
-            process.env.REFRESH_TOKEN_SECRET,
+            TEST_REFRESH_SECRET,
             { expiresIn: '7d' }
         );
 
@@ -115,7 +119,7 @@ describe('Auth Refresh Logic', () => {
     it('should reject a refresh token with a stale token version', async () => {
         const staleRefreshToken = jwt.sign(
             { user: { id: userId.toString(), tokenVersion: 0 } },
-            process.env.REFRESH_TOKEN_SECRET,
+            TEST_REFRESH_SECRET,
             { expiresIn: '7d' }
         );
 
