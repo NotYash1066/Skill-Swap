@@ -45,17 +45,20 @@ COPY client/nginx.conf /etc/nginx/http.d/default.conf
 RUN mkdir -p /app/server/uploads/avatars && \
     chown -R appuser:appgroup /app /usr/share/nginx/html /var/log/nginx /var/lib/nginx
 
-# Start script
+# Start script - nginx on Railway PORT, node on internal 5000
 RUN echo '#!/bin/sh\n\
-nginx\n\
-cd /app/server && exec node server.js\
+PUBLIC_PORT=${PORT:-80}\n\
+export PORT=5000\n\
+sed -i "s/listen 80;/listen ${PUBLIC_PORT};/" /etc/nginx/http.d/default.conf\n\
+nginx -g "daemon off;" &\n\
+cd /app/server && exec node server.js\n\
 ' > /app/start.sh && chmod +x /app/start.sh
 
 EXPOSE 80 5000
 
 USER appuser
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || wget --no-verbose --tries=1 --spider http://localhost:5000/api/test || exit 1
 
 CMD ["/app/start.sh"]
