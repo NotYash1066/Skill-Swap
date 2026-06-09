@@ -78,8 +78,13 @@ app.get("/", (req, res) => {
 });
 
 const connectDB = require('./config/db');
+const { connectRedis } = require('./config/redis');
+
 // Connect to Database
 connectDB();
+
+// Connect to Redis (non-blocking, app works without it for cache etc.)
+connectRedis().catch(err => logger.error('Failed to connect to Redis (non-fatal):', err.message));
 
 // Import routes
 const authRoutes = require("./routes/auth");
