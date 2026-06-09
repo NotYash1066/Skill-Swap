@@ -1,18 +1,46 @@
-node_modules
+# Root level
+node_modules/
 npm-debug.log
-.git
+.git/
 .gitignore
+
+# Environment & secrets (never copy into image)
 .env
 .env.local
 .env.*.local
-*.md
-.vscode
-.idea
-.omx
-.stitch
-conductor
-docs
-client/node_modules
-server/node_modules
 server/.env
-server/uploads
+server/.env.local
+*.pem
+*.key
+secrets/
+
+# Documentation & heavy non-runtime folders
+*.md
+.vscode/
+.idea/
+.omx/
+.stitch/
+conductor/
+docs/
+
+# Client build artifacts (we build fresh in Dockerfile)
+client/node_modules/
+client/dist/
+client/build/
+
+# Server
+server/node_modules/
+server/uploads/
+server/.env*
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs & temp
+*.log
+*.tmp
+
+# Deployment local overrides
+.railway/
+railway.env
