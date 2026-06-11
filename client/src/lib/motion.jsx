@@ -5,16 +5,14 @@ const wrapped = new Map();
 
 function wrapMotionComponent(Component) {
   const Safe = React.forwardRef(function SafeMotion({ initial = false, ...props }, ref) {
-    return <Component ref={ref} initial={initial} {...props} />;
+    // In production, never honor entrance animations — they can leave UI at opacity 0
+    const safeInitial = import.meta.env.PROD ? false : initial;
+    return <Component ref={ref} initial={safeInitial} {...props} />;
   });
   Safe.displayName = `SafeMotion(${Component.displayName || Component.name || 'Component'})`;
   return Safe;
 }
 
-/**
- * framer-motion proxy: default initial={false} so content never stays at opacity 0
- * when entrance animations fail to run (Vite prod + motion-utils bundling).
- */
 export const motion = new Proxy(framerMotion, {
   get(target, prop) {
     const key = String(prop);
