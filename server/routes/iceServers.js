@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../utils/logger');
-const auth = require('../middleware/auth');
-
 /**
  * GET /api/ice-servers
  *
@@ -25,7 +23,7 @@ const auth = require('../middleware/auth');
 let cachedIceServers = null;
 let cacheExpiry = 0;
 
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const twilioSid = process.env.TWILIO_ACCOUNT_SID;
     const twilioToken = process.env.TWILIO_AUTH_TOKEN;

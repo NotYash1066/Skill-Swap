@@ -66,7 +66,10 @@ class PeerService {
       // Derive API base URL from the same source as the rest of the app
       const baseUrl = import.meta.env.VITE_API_URL
         || (import.meta.env.PROD ? '' : 'http://localhost:5000');
-      const resp = await fetch(`${baseUrl}/api/ice-servers`);
+      const token = localStorage.getItem('token');
+      const resp = await fetch(`${baseUrl}/api/ice-servers`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
       if (resp.ok) {
         const data = await resp.json();
         if (data.iceServers && data.iceServers.length > 0) {
