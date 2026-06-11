@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import io from 'socket.io-client';
-import { API_BASE_URL } from '../config/api';
+import { createSocket } from '../config/api';
 import useVideoCall from '../hooks/useVideoCall';
 
 const VideoCallContext = createContext(null);
@@ -28,7 +27,7 @@ export const VideoCallProvider = ({ children }) => {
   // We use useMemo to create it only once when currentUser changes
   const socket = useMemo(() => {
     if (!currentUser) return null;
-    return io(API_BASE_URL, { transports: ['websocket'] });
+    return createSocket();
   }, [currentUser]);
 
   useEffect(() => {

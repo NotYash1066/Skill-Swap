@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import io from 'socket.io-client';
-import { API_BASE_URL } from '../config/api';
+import { createSocket } from '../config/api';
 import logger from '../utils/logger';
 
 const useSocket = (userId) => {
@@ -11,9 +10,7 @@ const useSocket = (userId) => {
     if (!userId) return;
 
     // Initialize socket connection
-    socketRef.current = io(API_BASE_URL, {
-      transports: ['websocket']
-    });
+    socketRef.current = createSocket();
 
     const socket = socketRef.current;
 

@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { io } from 'socket.io-client';
+
 import { motion } from 'framer-motion';
-import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, createSocket } from '../config/api';
 import Navbar from '../components/common/Navbar';
 import { clearAuthState, notifyAuthStateChange } from '../utils/auth';
 
@@ -11,7 +11,7 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [socket] = useState(() => io(API_BASE_URL));
+  const [socket] = useState(() => createSocket());
   const navigate = useNavigate();
   const memberSinceLabel = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString()
