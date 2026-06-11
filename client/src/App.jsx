@@ -145,21 +145,14 @@ function App() {
     };
   }, [syncAuthState]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <VideoCallProvider>
-          <Router future={{ 
-            v7_startTransition: true, 
-            v7_relativeSplatPath: true 
-          }}>
-          <div className="App">
-            <GlobalVideoCall />
-            <Routes>
+  const routes = (
+    <Router future={{
+      v7_startTransition: true,
+      v7_relativeSplatPath: true
+    }}>
+      <div className="App">
+        {isAuthenticated && <GlobalVideoCall />}
+        <Routes>
               <Route 
                 path="/login" 
                 element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} 
@@ -196,10 +189,23 @@ function App() {
                 path="/" 
                 element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} 
               />
-            </Routes>
+        </Routes>
+      </div>
+    </Router>
+  );
+
+  return (
+    <ErrorBoundary>
+      <ThemeProvider>
+        {loading ? (
+          <div className="min-h-screen bg-surface flex items-center justify-center text-on-surface font-body">
+            Loading...
           </div>
-          </Router>
-        </VideoCallProvider>
+        ) : isAuthenticated ? (
+          <VideoCallProvider>{routes}</VideoCallProvider>
+        ) : (
+          routes
+        )}
       </ThemeProvider>
     </ErrorBoundary>
   );

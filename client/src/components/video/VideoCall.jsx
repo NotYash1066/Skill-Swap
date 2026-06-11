@@ -10,11 +10,11 @@ import {
   FiUser,
   FiPhone
 } from 'react-icons/fi';
-import useVideoCall from '../../hooks/useVideoCall';
 import './VideoCall.css';
 
-const VideoCall = ({ socket, currentUser, onCallEnd, manager }) => {
-  const video = manager || useVideoCall(socket, currentUser);
+const VideoCall = ({ onCallEnd, manager }) => {
+  if (!manager) return null;
+
   const {
     isCallActive,
     isIncomingCall,
@@ -35,7 +35,7 @@ const VideoCall = ({ socket, currentUser, onCallEnd, manager }) => {
     toggleCamera,
     toggleScreenShare,
     resetCallState
-  } = video;
+  } = manager;
 
   // Handle call end callback
   useEffect(() => {
@@ -297,8 +297,6 @@ const VideoCall = ({ socket, currentUser, onCallEnd, manager }) => {
 export default VideoCall;
 
 VideoCall.propTypes = {
-  socket: PropTypes.object,
-  currentUser: PropTypes.object,
   onCallEnd: PropTypes.func,
   manager: PropTypes.object,
 };

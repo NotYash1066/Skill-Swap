@@ -7,12 +7,21 @@ const VideoCallContext = createContext(null);
 
 const getCurrentUser = () => {
   try {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) return JSON.parse(storedUser);
     const token = localStorage.getItem('token');
     if (!token) return null;
+
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      if (parsed?.id || parsed?._id) return parsed;
+    }
+
     const payload = JSON.parse(atob(token.split('.')[1]));
-    return { id: payload.user.id, username: payload.user.username || payload.user.name || 'User' };
+    if (!payload?.user?.id) return null;
+    return {
+      id: payload.user.id,
+      username: payload.user.username || payload.user.name || 'User',
+    };
   } catch {
     return null;
   }
