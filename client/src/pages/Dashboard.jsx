@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 
-import { motion } from 'framer-motion';
+import { motion } from '../lib/motion';
 import { API_ENDPOINTS, createSocket } from '../config/api';
 import Navbar from '../components/common/Navbar';
 import { clearAuthState, notifyAuthStateChange } from '../utils/auth';

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from '../lib/motion';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
 import useSocket from '../hooks/useSocket';
