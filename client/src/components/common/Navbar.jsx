@@ -78,12 +78,12 @@ const Navbar = ({ user, socket }) => {
           <div className="flex items-center gap-2">
             <NotificationBell socket={socket} />
             <ThemeToggle />
-            <button 
+            <button
               className="p-2 hover:bg-surface-container-low rounded-lg transition-all duration-200 text-on-surface-variant"
               onClick={() => navigate('/profile-settings')}
               aria-label="Profile settings"
             >
-              <span className="material-symbols-outlined">settings</span>
+              <span className="material-symbols-outlined" aria-hidden="true">settings</span>
             </button>
             <button 
               className="text-xs font-bold uppercase tracking-widest text-on-surface-variant hover:text-primary transition-colors ml-2"

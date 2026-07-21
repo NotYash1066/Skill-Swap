@@ -278,7 +278,6 @@ const Matches = () => {
               <div className="mt-12 flex justify-center">
                 <button
                   className="flex items-center gap-3 font-bold text-primary group hover:gap-4 transition-all"
-                  aria-label="Explore more matches"
                 >
                   <span>Explore more matches</span>
                   <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform" aria-hidden="true">arrow_forward</span>
