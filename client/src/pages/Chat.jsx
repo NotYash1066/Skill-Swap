@@ -161,7 +161,7 @@ const Chat = () => {
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full"
         />
-        <p className="ml-4 font-headline font-bold text-on-surface">Opening your messages...</p>
+        <p className="ml-4 font-headline font-bold text-on-surface animate-pulse" aria-live="polite">Opening your messages...</p>
       </div>
     );
   }

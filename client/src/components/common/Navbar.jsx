@@ -1,3 +1,4 @@
+import React from 'react';
 import axios from 'axios';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { API_ENDPOINTS } from '../../config/api';
@@ -80,6 +81,7 @@ const Navbar = ({ user, socket }) => {
             <button 
               className="p-2 hover:bg-surface-container-low rounded-lg transition-all duration-200 text-on-surface-variant"
               onClick={() => navigate('/profile-settings')}
+              aria-label="Profile settings"
             >
               <span className="material-symbols-outlined">settings</span>
             </button>
