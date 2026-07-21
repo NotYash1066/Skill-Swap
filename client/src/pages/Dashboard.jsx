@@ -62,7 +62,7 @@ const Dashboard = () => {
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full"
         />
-        <p className="ml-4 font-headline font-bold text-on-surface">Loading your studio...</p>
+        <p className="ml-4 font-headline font-bold text-on-surface animate-pulse" aria-live="polite">Loading your studio...</p>
       </div>
     );
   }

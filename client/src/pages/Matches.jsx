@@ -74,7 +74,7 @@ const Matches = () => {
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full"
         />
-        <p className="ml-4 font-headline font-bold text-on-surface">Discovering experts...</p>
+        <p className="ml-4 font-headline font-bold text-on-surface animate-pulse" aria-live="polite">Discovering experts...</p>
       </div>
     );
   }
@@ -135,12 +135,16 @@ const Matches = () => {
               <button
                 className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-on-surface' : 'text-on-surface-variant hover:text-primary'}`}
                 onClick={() => setViewMode('grid')}
+                aria-label="Grid view"
+                aria-pressed={viewMode === 'grid'}
               >
                 Grid
               </button>
               <button
                 className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-on-surface' : 'text-on-surface-variant hover:text-primary'}`}
                 onClick={() => setViewMode('list')}
+                aria-label="List view"
+                aria-pressed={viewMode === 'list'}
               >
                 List
               </button>
@@ -153,9 +157,17 @@ const Matches = () => {
               <p className="font-medium">{error}</p>
             </div>
           ) : hasNoMatches ? (
-            <div className="rounded-2xl bg-surface-container-low px-6 py-10 text-center">
+            <div className="rounded-2xl bg-surface-container-low px-6 py-10 text-center flex flex-col items-center">
               <h2 className="font-headline text-2xl font-bold mb-2 text-on-surface">No matches found</h2>
-              <p className="text-on-surface-variant font-medium">Update your skills or broaden your search.</p>
+              <p className="text-on-surface-variant font-medium mb-6">Update your skills or broaden your search.</p>
+              <button
+                onClick={() => navigate('/profile-settings')}
+                className="px-6 py-3 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-dim transition-colors flex items-center gap-2"
+                aria-label="Update profile to find more matches"
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">edit</span>
+                Update Profile
+              </button>
             </div>
           ) : (
             <>
@@ -264,9 +276,12 @@ const Matches = () => {
               </div>
 
               <div className="mt-12 flex justify-center">
-                <button className="flex items-center gap-3 font-bold text-primary group hover:gap-4 transition-all">
+                <button
+                  className="flex items-center gap-3 font-bold text-primary group hover:gap-4 transition-all"
+                  aria-label="Explore more matches"
+                >
                   <span>Explore more matches</span>
-                  <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                  <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform" aria-hidden="true">arrow_forward</span>
                 </button>
               </div>
             </>
