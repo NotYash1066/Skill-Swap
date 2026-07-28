@@ -1,7 +1,10 @@
 const logger = require('./logger');
 
+const MIN_SECRET_LENGTH = 32;
+
 const requiredEnvVars = [
   'JWT_SECRET',
+  'REFRESH_TOKEN_SECRET',
   'MONGO_URI'
 ];
 
@@ -13,8 +16,25 @@ const validateEnv = () => {
     process.exit(1);
   }
   
-  if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 32) {
-    logger.warn('JWT_SECRET should be at least 32 characters for security');
+  if (process.env.JWT_SECRET.length < MIN_SECRET_LENGTH) {
+    if (process.env.NODE_ENV === 'production') {
+      logger.error(`JWT_SECRET must be at least ${MIN_SECRET_LENGTH} characters in production`);
+      process.exit(1);
+    }
+    logger.warn(`JWT_SECRET should be at least ${MIN_SECRET_LENGTH} characters for security`);
+  }
+
+  if (process.env.REFRESH_TOKEN_SECRET.length < MIN_SECRET_LENGTH) {
+    if (process.env.NODE_ENV === 'production') {
+      logger.error(`REFRESH_TOKEN_SECRET must be at least ${MIN_SECRET_LENGTH} characters in production`);
+      process.exit(1);
+    }
+    logger.warn(`REFRESH_TOKEN_SECRET should be at least ${MIN_SECRET_LENGTH} characters for security`);
+  }
+
+  if (process.env.REFRESH_TOKEN_SECRET === process.env.JWT_SECRET) {
+    logger.error('REFRESH_TOKEN_SECRET must be different from JWT_SECRET');
+    process.exit(1);
   }
   
   logger.info('Environment variables validated');

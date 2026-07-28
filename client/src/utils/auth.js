@@ -5,8 +5,12 @@ export const storeAuthTokens = ({ token, refreshToken }) => {
     localStorage.setItem('token', token);
   }
 
-  if (refreshToken) {
-    localStorage.setItem('refreshToken', refreshToken);
+  if (refreshToken !== undefined) {
+    if (refreshToken) {
+      localStorage.setItem('refreshToken', refreshToken);
+    } else {
+      localStorage.removeItem('refreshToken');
+    }
   }
 };
 

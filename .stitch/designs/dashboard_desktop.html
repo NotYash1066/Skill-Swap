@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SkillSwap Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed": "#3b002b",
+              "tertiary-dim": "#882a69",
+              "on-primary-container": "#0a0081",
+              "tertiary-fixed-dim": "#ef81c4",
+              "primary-dim": "#3939c7",
+              "surface-container-low": "#f4eeff",
+              "surface-container-high": "#e6deff",
+              "on-secondary-fixed-variant": "#00655b",
+              "error": "#b41340",
+              "surface-variant": "#e1d8ff",
+              "surface-bright": "#faf4ff",
+              "outline": "#79719d",
+              "on-background": "#302950",
+              "on-surface": "#302950",
+              "secondary-container": "#6df5e1",
+              "on-secondary": "#c0fff3",
+              "secondary-fixed-dim": "#5de7d3",
+              "on-surface-variant": "#5e5680",
+              "inverse-on-surface": "#a097c5",
+              "on-tertiary-fixed-variant": "#6e1354",
+              "primary-container": "#9396ff",
+              "surface-container-highest": "#e1d8ff",
+              "surface": "#faf4ff",
+              "secondary-fixed": "#6df5e1",
+              "secondary": "#00675d",
+              "surface-dim": "#d8ceff",
+              "on-secondary-container": "#005b51",
+              "outline-variant": "#b0a7d6",
+              "on-primary-fixed": "#000000",
+              "tertiary": "#963776",
+              "inverse-surface": "#0f072e",
+              "surface-tint": "#4647d3",
+              "tertiary-container": "#ff8ed2",
+              "on-secondary-fixed": "#00463e",
+              "primary-fixed-dim": "#8387ff",
+              "error-dim": "#a70138",
+              "on-tertiary": "#ffeef4",
+              "error-container": "#f74b6d",
+              "tertiary-fixed": "#ff8ed2",
+              "on-primary-fixed-variant": "#0e009d",
+              "inverse-primary": "#8083ff",
+              "on-tertiary-container": "#63054a",
+              "background": "#faf4ff",
+              "surface-container-lowest": "#ffffff",
+              "on-error-container": "#510017",
+              "surface-container": "#ece4ff",
+              "secondary-dim": "#005a50",
+              "primary": "#4647d3",
+              "on-primary": "#f4f1ff",
+              "primary-fixed": "#9396ff",
+              "on-error": "#ffefef"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Plus Jakarta Sans"],
+              "label": ["Manrope"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-nav {
+        backdrop-filter: blur(20px);
+        background: rgba(250, 244, 255, 0.8);
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        height: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #e1d8ff;
+        border-radius: 10px;
+      }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="w-full top-0 sticky bg-[#faf4ff] dark:bg-slate-950 z-50 shadow-[0_24px_24px_rgba(48,41,80,0.04)]">
+<div class="flex items-center justify-between px-8 py-4 max-w-screen-2xl mx-auto w-full">
+<div class="flex items-center gap-12">
+<span class="text-2xl font-black tracking-tighter text-indigo-600 dark:text-indigo-400">SkillSwap</span>
+<nav class="hidden md:flex items-center gap-8 font-['Plus_Jakarta_Sans'] font-medium text-sm tracking-tight">
+<a class="text-indigo-600 dark:text-indigo-400 font-bold border-b-2 border-indigo-600 pb-1" href="#">Dashboard</a>
+<a class="text-[#5e5680] dark:text-slate-400 hover:text-indigo-500 transition-colors" href="#">Matches</a>
+<a class="text-[#5e5680] dark:text-slate-400 hover:text-indigo-500 transition-colors" href="#">Chat</a>
+<a class="text-[#5e5680] dark:text-slate-400 hover:text-indigo-500 transition-colors" href="#">Profile</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex items-center bg-surface-container-high rounded-full px-4 py-2 gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-lg">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-64 placeholder:text-on-surface-variant" placeholder="Search skills or mentors..." type="text"/>
+</div>
+<button class="p-2 hover:bg-[#f4eeff] dark:hover:bg-slate-800 rounded-lg transition-all duration-200 text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 hover:bg-[#f4eeff] dark:hover:bg-slate-800 rounded-lg transition-all duration-200 text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-10 w-10 rounded-full overflow-hidden border-2 border-primary ring-2 ring-primary-container/20">
+<img alt="User Avatar" data-alt="professional portrait of a young man with a friendly smile, warm studio lighting, clean minimalist background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBl--YtWmX98LLMck0EYYnR9DzbxP_k4y55ka50_eYnKoTO98BKskSPdUlZyQFOVe7f7KQrLK84N9FQysWNcYt7i5rdRirRYqcMOff8qYUEFIVun-55QJn2T_JZA48c7AUOSrb91W0ZuXUPdyOGUAGxS9Z6vF81uny9STW8rxueiKg2u5CfqopYPY--eWaqpStGE04YW9iFFeqVWbQ_Ot16uXH1nBmQSiHNpRZRlg2TTurR3LqABLvEkWFjhAJ3ifc5oGc9zycOdHk"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-grow max-w-screen-2xl mx-auto w-full px-8 py-10">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+<!-- Left Column: Profile & Skill Clouds -->
+<aside class="lg:col-span-4 space-y-8">
+<!-- Profile Summary Card -->
+<div class="bg-surface-container-lowest rounded-xl p-8 shadow-[0_8px_30px_rgb(48,41,80,0.04)] relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
+<div class="relative z-10">
+<h2 class="font-headline font-extrabold text-2xl tracking-tight mb-2">Alex Rivera</h2>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">Product Designer by day, aspiring Jazz pianist by night. Passionate about human-centric design and analog photography.</p>
+<div class="space-y-4 font-label">
+<div class="flex items-center gap-3 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-lg">location_on</span>
+<span>San Francisco, CA</span>
+</div>
+<div class="flex items-center gap-3 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-lg">calendar_today</span>
+<span>Available: Weekends &amp; Weeknights</span>
+</div>
+<div class="flex items-center gap-3 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span>12 Successful Swaps</span>
+</div>
+</div>
+<button class="w-full mt-8 py-3 px-6 bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:scale-[0.98] transition-transform duration-200">
+                            Edit Profile
+                        </button>
+</div>
+</div>
+<!-- Tag Clouds -->
+<div class="space-y-6">
+<div>
+<h3 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+                            Skills I Offer
+                            <span class="h-1 w-1 bg-secondary rounded-full"></span>
+</h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-2 bg-secondary/10 text-secondary rounded-full font-label text-xs font-bold tracking-wide uppercase">UI Design</span>
+<span class="px-4 py-2 bg-secondary/10 text-secondary rounded-full font-label text-xs font-bold tracking-wide uppercase">Prototyping</span>
+<span class="px-4 py-2 bg-secondary/10 text-secondary rounded-full font-label text-xs font-bold tracking-wide uppercase">Figma</span>
+<span class="px-4 py-2 bg-secondary/10 text-secondary rounded-full font-label text-xs font-bold tracking-wide uppercase">Branding</span>
+<span class="px-4 py-2 bg-secondary/10 text-secondary rounded-full font-label text-xs font-bold tracking-wide uppercase">Adobe Suite</span>
+</div>
+</div>
+<div>
+<h3 class="font-headline font-bold text-lg mb-4 flex items-center gap-2">
+                            Skills I Want to Learn
+                            <span class="h-1 w-1 bg-tertiary rounded-full"></span>
+</h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-2 bg-tertiary/10 text-tertiary rounded-full font-label text-xs font-bold tracking-wide uppercase">Jazz Piano</span>
+<span class="px-4 py-2 bg-tertiary/10 text-tertiary rounded-full font-label text-xs font-bold tracking-wide uppercase">Cooking Thai</span>
+<span class="px-4 py-2 bg-tertiary/10 text-tertiary rounded-full font-label text-xs font-bold tracking-wide uppercase">React.js</span>
+<span class="px-4 py-2 bg-tertiary/10 text-tertiary rounded-full font-label text-xs font-bold tracking-wide uppercase">French</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Right Column: Hero & Suggested Matches -->
+<div class="lg:col-span-8 space-y-10">
+<!-- Hero Section -->
+<section class="bg-surface-container-low rounded-[2rem] p-10 relative overflow-hidden">
+<div class="max-w-lg relative z-10">
+<h1 class="font-headline font-extrabold text-5xl tracking-tight text-on-surface mb-4">Hello, Alex!</h1>
+<p class="text-on-surface-variant text-lg leading-relaxed mb-8">Ready for your next learning adventure? There are 24 new potential matches looking for your UI Design skills today.</p>
+<div class="flex gap-4">
+<button class="px-8 py-3 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-dim transition-colors">Start a Swap</button>
+<button class="px-8 py-3 bg-surface-container-highest text-primary rounded-lg font-bold hover:bg-surface-variant transition-colors">View Requests</button>
+</div>
+</div>
+<!-- Abstract Kinetic Element -->
+<div class="absolute right-0 top-0 bottom-0 w-1/3 hidden md:block">
+<div class="h-full w-full bg-gradient-to-br from-primary/10 to-secondary/10 rounded-l-full opacity-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-[8rem] text-primary/20 rotate-12">swap_calls</span>
+</div>
+</div>
+</section>
+<!-- Connection Ribbon (Avatars) -->
+<section>
+<h3 class="font-headline font-bold text-sm text-on-surface-variant uppercase tracking-widest mb-6 px-2">Community Pulsing</h3>
+<div class="flex items-center -space-x-4 overflow-x-auto py-4 custom-scrollbar">
+<div class="h-16 w-16 rounded-full border-4 border-surface ring-2 ring-primary-container/30 overflow-hidden shrink-0">
+<img alt="Avatar" data-alt="portrait of a young smiling woman with curly hair, natural outdoor lighting, green park background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxDlVfyuhd-rkYNROnJ-8yKPVqoOXViUFzHm-xAc3m5539S2YWXqUyA7fM-JhLvNJjAGmUJG-eO3dJdbVK4-OezlZjtJS4y99fvwc9kK9nUlDalvK9Hjp_03Sl3-limQC99m5AmHqsB4zEa2igfAsioYTbgpzr8VIgcL8VVJT2COulq1NGv8tPmjWCdR4wgX5R9g3ySabvToUJXzYPx6EJaq6QQDQRxYuFnyURHsOJwLWOxlojTIZ6FZo-lBMXUMmx9yoLUDo9v-k"/>
+</div>
+<div class="h-16 w-16 rounded-full border-4 border-surface ring-2 ring-primary-container/30 overflow-hidden shrink-0">
+<img alt="Avatar" data-alt="close up of a man with a beard and glasses, soft warm light, office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQtymTDWOSzJk7yEN4paMtBgK8p9ZBKxY3naD6AUQNDTHlcPG7A3EpWw_5A3c0pLsm0lySplNRFBHo8x1CSR9Ixl58gcFEC4tiCu0FJ8iuHwCibNTc9-2TDcIjCi18QiWC3L1NOKPjRUF86VZlDI9P0ZYOEauq1Rj4oqUJwCUnzWhPyW_-0ZzguYXcLTyirGferyVxMpG_GCu_McooLAiJypb5oz_Zlg8nj4bCS_ouUwE7YQtX7t0Rhnj-JM0ITy5pO7x76y72XEE"/>
+</div>
+<div class="h-16 w-16 rounded-full border-4 border-surface ring-2 ring-primary-container/30 overflow-hidden shrink-0">
+<img alt="Avatar" data-alt="headshot of a woman with short dark hair, high contrast lighting, urban loft setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOl1a3BYxevAV_axcVm9fVE5C9rVJRCD260JI54bKzeQLZwHfjYiwv_cXd08ynFL3p7aYVhAoUVCjMDlsLKrITt9KPFHUn3-Kb8_Oo2FbUt-h1O2D_2OQi9luL-1ClJUlec2HXJQ6WfEvaarLuhqGXRuwOCeMga_joLdfhxcmKGwNczK1_yyO0F3HsA-MaVHx3W3iZa0K83iFK3VnfVcrlQfnXXE0g9c6Ue5ZpfniTELfxAwP59YdmMl0k4pIheG-94rGAEAoxw1s"/>
+</div>
+<div class="h-16 w-16 rounded-full border-4 border-surface ring-2 ring-primary-container/30 overflow-hidden shrink-0">
+<img alt="Avatar" data-alt="professional portrait of a middle-aged man in a blue shirt, soft afternoon sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlIcFAGrGxdL1IB9VvQ6l-Ys0Zv8YDoBiCZO0njP0tpMagwghvWTGADveeVj8L0FdhjJr_ZWf_axmtbXsBuQwA16CHetpqZ3DhrquA6UjXKYGkb2mRhFK_4_A6mZOajW8ehqpJEypgf-cgP2KPIKpAh29OwWxaF_zvnhH5FKESZirDXWrdXjmrDkpVwzDKkRGGhbIV8RoUVwjAweSbLHWc84MSyS8zuDapx3R99YR3UDHrEtPgA5JcGobbb8LgLFSD9fkmOHXhA4Y"/>
+</div>
+<div class="h-16 w-16 rounded-full border-4 border-surface ring-2 ring-primary-container/30 overflow-hidden shrink-0">
+<img alt="Avatar" data-alt="portrait of a focused young woman looking at camera, minimalist studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqSvBVMlCIK_uJ5wLohCdFZpXaha9XKnK7GWj1dSvufljJhgvRutLdRWZuHfhTHxltxeFioO-4azPXbBcdvM9DNeIcOMkbeoOPjG01Zlb-_OeduKtDBoMmNm2ozJBFHRWdllfiu9nbz7Ncfl5c1IHWvSwXIz-az8xrjMSjZnzcuFAtFuoYT_zE4Kztu0i8LQP_rlnCv7bAWKpCIyR-kNJIMaoXJzhKClw_EPmEL1DQsG_1ZOBnGp36i_XgGpwj1xxJvEzAvU2s7VI"/>
+</div>
+<div class="h-16 w-16 rounded-full border-4 border-surface ring-2 ring-primary-container/30 overflow-hidden shrink-0">
+<img alt="Avatar" data-alt="close up of a person with expressive features, dramatic shadows, textured wall background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8EyZiB6llTf1RV_vasuNmBZNH0s4RZAieYN919aUVGtFl-lxGUII9QBOydEuLMN4WFt6j-FusXEOlvdTYBfb6RZbJyhxCb3DtCkZ75tsuL8NJvzWg9EpdEdDDAb--KiNJKna-F-L5khz16tjLbNfi6I79Nw5RGXBf4jMVFUf-TVqxJCxMFAMRRCoU649dmIMYNV0EnBqCXGZvK_Q6nl67Co4AubObC4mEffEQGSj8yF6f96RQA9W79OHSodMbnOsj5zK8h5C9Q74"/>
+</div>
+<div class="flex items-center justify-center h-16 w-16 rounded-full border-4 border-surface bg-surface-container-highest shrink-0 z-10">
+<span class="text-primary font-bold text-sm">+89</span>
+</div>
+</div>
+</section>
+<!-- Suggested Matches -->
+<section>
+<div class="flex items-center justify-between mb-8 px-2">
+<h2 class="font-headline font-extrabold text-2xl tracking-tight text-on-surface">Suggested Matches</h2>
+<a class="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all" href="#">
+                            View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Match Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 group cursor-pointer hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
+<div class="flex gap-4 mb-4">
+<div class="h-14 w-14 rounded-xl overflow-hidden shrink-0 shadow-sm">
+<img alt="Sarah J." data-alt="headshot of a smiling woman with glasses, light through window, soft textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1EE8K3jtyP4rOVNAmCutQSBeKe2NiITzIino1gBKOXreR69rhrwS2Gs8lH7tyMjAVOa_q3X9IoWcaVWSR0MwCt8-kcay9frh-1osjMggm7KzU1X6kyR1z7dgdEh4Dk2WKe_rsT-KdTwfm_Ln2cCVcYVUFzqpyYl6ZCL04NYZzxAOsWz1JkpQkwoYmktTvibquMlEU8TZASKf8Pb-EWt5Yr-dcanGzxZpw-QYc2CBeEsSCy169cBIK1OU-aGeRmBSHxbAlTWMWBBg"/>
+</div>
+<div>
+<h4 class="font-headline font-bold text-lg leading-tight group-hover:text-primary transition-colors">Sarah Jenkins</h4>
+<div class="flex items-center gap-1 text-on-surface-variant text-xs font-label">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                        2.4 miles away
+                                    </div>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/60 block mb-1">Offers</span>
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold">Jazz Piano</span>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold">Music Theory</span>
+</div>
+</div>
+<div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/60 block mb-1">Wants</span>
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-[10px] font-bold">UI Design</span>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border-2 border-primary/10 group-hover:border-primary group-hover:bg-primary group-hover:text-on-primary text-primary font-bold rounded-lg text-xs transition-all duration-300">
+                                Connect
+                            </button>
+</div>
+<!-- Match Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-6 group cursor-pointer hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
+<div class="flex gap-4 mb-4">
+<div class="h-14 w-14 rounded-xl overflow-hidden shrink-0 shadow-sm">
+<img alt="Marcus T." data-alt="professional portrait of a man in a modern office, cinematic side lighting, tech aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyTLJectrN-p3xUkE1EGegdPkOXUrupicK1Nr_DBMyAugvSxWnhvYGZvLseMuiWnXv4qxnbDMiYXk_jKur3Mu9fcGuP9O-stDxMjTsKpbxwN1p3Wscg1Oikh9k6SVc_cZBb8EKx_J5nPGkI3-aNCUzV7zcBFhFtdVvpLjagAER-moWeDj7rVAVPnW4_LRna43R0rNlozg8Y3Krnve5Qrh7xj8yb1B6eDUejLEAavFBV7eWsWrPgt8jZElKUhBVfxEWxPgKJa0UnJw"/>
+</div>
+<div>
+<h4 class="font-headline font-bold text-lg leading-tight group-hover:text-primary transition-colors">Marcus Thorne</h4>
+<div class="flex items-center gap-1 text-on-surface-variant text-xs font-label">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+                                        Remote
+                                    </div>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/60 block mb-1">Offers</span>
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold">French</span>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold">Linguistics</span>
+</div>
+</div>
+<div>
+<span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/60 block mb-1">Wants</span>
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-[10px] font-bold">Prototyping</span>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border-2 border-primary/10 group-hover:border-primary group-hover:bg-primary group-hover:text-on-primary text-primary font-bold rounded-lg text-xs transition-all duration-300">
+                                Connect
+                            </button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-auto bg-[#f4eeff] dark:bg-slate-900 border-none">
+<div class="flex flex-col md:flex-row justify-between items-center px-8 py-12 w-full gap-4 max-w-screen-2xl mx-auto">
+<p class="font-['Manrope'] text-xs font-semibold uppercase tracking-widest text-[#5e5680] dark:text-slate-500">
+                © 2024 SkillSwap. The Kinetic Studio.
+            </p>
+<div class="flex gap-8">
+<a class="font-['Manrope'] text-xs font-semibold uppercase tracking-widest text-[#5e5680] dark:text-slate-500 hover:text-indigo-600 transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="font-['Manrope'] text-xs font-semibold uppercase tracking-widest text-[#5e5680] dark:text-slate-500 hover:text-indigo-600 transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="font-['Manrope'] text-xs font-semibold uppercase tracking-widest text-[#5e5680] dark:text-slate-500 hover:text-indigo-600 transition-colors opacity-80 hover:opacity-100" href="#">Help Center</a>
+<a class="font-['Manrope'] text-xs font-semibold uppercase tracking-widest text-[#5e5680] dark:text-slate-500 hover:text-indigo-600 transition-colors opacity-80 hover:opacity-100" href="#">Community Guidelines</a>
+</div>
+</div>
+</footer>
+</body></html>

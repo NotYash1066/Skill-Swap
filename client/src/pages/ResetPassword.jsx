@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { motion } from 'framer-motion';
 import { API_ENDPOINTS } from '../config/api';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -15,9 +14,27 @@ const ResetPassword = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigateTimerRef = useRef(null);
+
+  // Clear the delayed-navigation timer on unmount
+  useEffect(() => {
+    return () => {
+      if (navigateTimerRef.current) {
+        window.clearTimeout(navigateTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const validatePassword = (password) => {
+    if (password.length < 8) return 'Password must be at least 8 characters.';
+    if (!/[A-Z]/.test(password)) return 'Password must contain an uppercase letter.';
+    if (!/[a-z]/.test(password)) return 'Password must contain a lowercase letter.';
+    if (!/[0-9]/.test(password)) return 'Password must contain a number.';
+    return null;
   };
 
   const handleSubmit = async (e) => {
@@ -27,6 +44,12 @@ const ResetPassword = () => {
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      return;
+    }
+
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -40,7 +63,7 @@ const ResetPassword = () => {
       setSuccessMessage(res.data?.message || 'Password reset successful. Redirecting to sign in...');
       setFormData({ password: '', confirmPassword: '' });
 
-      window.setTimeout(() => {
+      navigateTimerRef.current = window.setTimeout(() => {
         navigate('/login', { replace: true });
       }, 1500);
     } catch (err) {
@@ -68,12 +91,7 @@ const ResetPassword = () => {
         <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-surface-container-high rounded-full blur-[120px] opacity-60"></div>
         <div className="absolute bottom-[-10%] right-[-5%] w-[35%] h-[35%] bg-secondary-container rounded-full blur-[100px] opacity-40"></div>
 
-        <motion.div
-          className="w-full max-w-[1100px] grid md:grid-cols-2 rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(48,41,80,0.12)] bg-surface-container-lowest relative z-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-        >
+        <div className="w-full max-w-[1100px] grid md:grid-cols-2 rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(48,41,80,0.12)] bg-surface-container-lowest relative z-10">
           <div className="hidden md:flex flex-col justify-between p-12 bg-gradient-to-br from-primary to-primary-container text-on-primary">
             <div>
               <span className="text-2xl font-black tracking-tighter text-on-primary">SkillSwap</span>
@@ -156,7 +174,7 @@ const ResetPassword = () => {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </main>
     </div>
   );

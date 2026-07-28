@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+
 import { API_ENDPOINTS } from '../config/api';
 import ThemeToggle from '../components/ThemeToggle';
 import { notifyAuthStateChange, storeAuthTokens } from '../utils/auth';
@@ -60,12 +60,7 @@ const Login = () => {
         <div className="absolute bottom-[-10%] right-[-5%] w-[35%] h-[35%] bg-secondary-container rounded-full blur-[100px] opacity-40"></div>
 
         {/* Login Container */}
-        <motion.div 
-          className="w-full max-w-[1100px] grid md:grid-cols-2 rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(48,41,80,0.12)] bg-surface-container-lowest relative z-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
+        <div className="w-full max-w-[1100px] grid md:grid-cols-2 rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(48,41,80,0.12)] bg-surface-container-lowest relative z-10">
           {/* Branding/Visual Side */}
           <div className="hidden md:flex flex-col justify-between p-12 bg-gradient-to-br from-primary to-primary-container text-on-primary">
             <div>
@@ -176,7 +171,7 @@ const Login = () => {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       </main>
 
       {/* Footer */}

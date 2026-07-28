@@ -5,12 +5,9 @@ import VideoCall from './VideoCall';
 const GlobalVideoCall = () => {
   const ctx = useVideoCallContext();
   if (!ctx) return null;
-  const { manager, currentUser } = ctx;
+  const { manager } = ctx;
 
-  // Render the VideoCall UI bound to the global manager
-  return (
-    <VideoCall manager={manager} currentUser={currentUser} onCallEnd={() => {}} />
-  );
+  return <VideoCall manager={manager} onCallEnd={() => {}} />;
 };
 
 export default GlobalVideoCall;

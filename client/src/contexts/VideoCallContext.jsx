@@ -1,19 +1,27 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import io from 'socket.io-client';
-import { API_BASE_URL } from '../config/api';
+import { createSocket } from '../config/api';
 import useVideoCall from '../hooks/useVideoCall';
 
 const VideoCallContext = createContext(null);
 
 const getCurrentUser = () => {
   try {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) return JSON.parse(storedUser);
     const token = localStorage.getItem('token');
     if (!token) return null;
+
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      if (parsed?.id || parsed?._id) return parsed;
+    }
+
     const payload = JSON.parse(atob(token.split('.')[1]));
-    return { id: payload.user.id, username: payload.user.username || payload.user.name || 'User' };
+    if (!payload?.user?.id) return null;
+    return {
+      id: payload.user.id,
+      username: payload.user.username || payload.user.name || 'User',
+    };
   } catch {
     return null;
   }
@@ -28,7 +36,7 @@ export const VideoCallProvider = ({ children }) => {
   // We use useMemo to create it only once when currentUser changes
   const socket = useMemo(() => {
     if (!currentUser) return null;
-    return io(API_BASE_URL, { transports: ['websocket'] });
+    return createSocket();
   }, [currentUser]);
 
   useEffect(() => {

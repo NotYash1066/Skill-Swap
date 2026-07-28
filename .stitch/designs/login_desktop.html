@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | SkillSwap</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-tertiary-fixed": "#3b002b",
+                        "tertiary-dim": "#882a69",
+                        "on-primary-container": "#0a0081",
+                        "tertiary-fixed-dim": "#ef81c4",
+                        "primary-dim": "#3939c7",
+                        "surface-container-low": "#f4eeff",
+                        "surface-container-high": "#e6deff",
+                        "on-secondary-fixed-variant": "#00655b",
+                        "error": "#b41340",
+                        "surface-variant": "#e1d8ff",
+                        "surface-bright": "#faf4ff",
+                        "outline": "#79719d",
+                        "on-background": "#302950",
+                        "on-surface": "#302950",
+                        "secondary-container": "#6df5e1",
+                        "on-secondary": "#c0fff3",
+                        "secondary-fixed-dim": "#5de7d3",
+                        "on-surface-variant": "#5e5680",
+                        "inverse-on-surface": "#a097c5",
+                        "on-tertiary-fixed-variant": "#6e1354",
+                        "primary-container": "#9396ff",
+                        "surface-container-highest": "#e1d8ff",
+                        "surface": "#faf4ff",
+                        "secondary-fixed": "#6df5e1",
+                        "secondary": "#00675d",
+                        "surface-dim": "#d8ceff",
+                        "on-secondary-container": "#005b51",
+                        "outline-variant": "#b0a7d6",
+                        "on-primary-fixed": "#000000",
+                        "tertiary": "#963776",
+                        "inverse-surface": "#0f072e",
+                        "surface-tint": "#4647d3",
+                        "tertiary-container": "#ff8ed2",
+                        "on-secondary-fixed": "#00463e",
+                        "primary-fixed-dim": "#8387ff",
+                        "error-dim": "#a70138",
+                        "on-tertiary": "#ffeef4",
+                        "error-container": "#f74b6d",
+                        "tertiary-fixed": "#ff8ed2",
+                        "on-primary-fixed-variant": "#0e009d",
+                        "inverse-primary": "#8083ff",
+                        "on-tertiary-container": "#63054a",
+                        "background": "#faf4ff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#510017",
+                        "surface-container": "#ece4ff",
+                        "secondary-dim": "#005a50",
+                        "primary": "#4647d3",
+                        "on-primary": "#f4f1ff",
+                        "primary-fixed": "#9396ff",
+                        "on-error": "#ffefef"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .kinetic-gradient {
+            background: linear-gradient(135deg, #4647d3 0%, #9396ff 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .input-focus-line::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background-color: #4647d3;
+            transition: all 0.3s ease-out;
+            transform: translateX(-50%);
+        }
+        .input-container:focus-within .input-focus-line::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+<main class="flex-grow flex items-center justify-center p-6 relative overflow-hidden">
+<!-- Background Organic Elements -->
+<div class="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] bg-surface-container-high rounded-full blur-[120px] opacity-60"></div>
+<div class="absolute bottom-[-10%] right-[-5%] w-[35%] h-[35%] bg-secondary-container rounded-full blur-[100px] opacity-40"></div>
+<!-- Login Container -->
+<div class="w-full max-w-[1100px] grid md:grid-cols-2 rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(48,41,80,0.12)] bg-surface-container-lowest relative z-10">
+<!-- Branding/Visual Side -->
+<div class="hidden md:flex flex-col justify-between p-12 kinetic-gradient text-on-primary">
+<div>
+<span class="text-2xl font-black tracking-tighter text-on-primary">SkillSwap</span>
+</div>
+<div class="space-y-6">
+<h1 class="text-5xl font-extrabold tracking-tight leading-[1.1]">The Kinetic Studio of Knowledge.</h1>
+<p class="text-on-primary/80 text-lg max-w-sm font-medium">Connect with mentors, swap skills, and grow your expertise in a collaborative fluid environment.</p>
+</div>
+<div class="flex -space-x-3">
+<img class="w-12 h-12 rounded-full border-4 border-primary object-cover" data-alt="portrait of a young smiling professional woman with bright studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0vnMJjVWOBTDNfcSp_9_nPQmcFdjWurIS4vV8W1oHme-fWUMzyYkQFPlsBEj6-9aTqWVLp2eWS20fDz2PoLPqII43rF4MgE7lGMZvXEbHAccqLuEXtc9tNwIKeTRp26k9CJ4gau1_sIH8KJ9Kfz9Zzusi_cPG7N9Bo9P1XU-sBjqZVuv1ZXjd9jLDGmzvYINMDIhXTmLP8ei8WU8eEKfNyvQeH6jzhpU6Pc38VBfnDio1HL4TloiFISVPY7IkYG7oOTqDmlvagFg"/>
+<img class="w-12 h-12 rounded-full border-4 border-primary object-cover" data-alt="portrait of a confident middle-aged man with short beard and stylish glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxMyfLYKfoeC4dCEikDAQVRNpLYv0I_PlhQ1-5DdtdJoNpHN4ztGEX5qzbq6-cLHK8BF6EojONM-gWuSGBdHwlFz-CLrOR7GHXlfe3cjxp9zxMXzqYpPk3T-YpXShHYO-ohDKHGR6ScBtbcxcxM2J9SLH06oIDZs3pY9SfIbLDlIz5N0wypjMNbnw4nf0RUO4zG7P75GopjxEDGpXrcbDDmDzOgOIitdLIxq710sNV0VI4CK6ChGNDF5S06Dl8pb_6Z-i1PL_VzeY"/>
+<img class="w-12 h-12 rounded-full border-4 border-primary object-cover" data-alt="portrait of a young man with curly hair and trendy casual wear" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCh0-2zORrjA04CKfrOrMKL0W2lrJgv_GZ3DFof1khLQIG24wSSo21Q4IUwnifT-O0BkdMFpazhxi4urKqsZgytFF4M4ve82Zi8dNysn_LCfR3ZD8xPiAvSl7doG85Ei5gBJ84sFi1cT7rDN_5ENcd22Qdn3S2J5pnttqBw3l6ssE8Ai90cpLjxnrcz1f0oiKRk7TcnNURzWf5AOpKieGDwLdPTO7BE83C0xIjv4tzD-En7DSPdyFOK5PkfEZNZvknH5TsdT5G_MLo"/>
+<div class="w-12 h-12 rounded-full border-4 border-primary bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed font-bold text-sm">+2k</div>
+</div>
+</div>
+<!-- Form Side -->
+<div class="p-8 md:p-16 flex flex-col justify-center bg-surface-container-lowest">
+<div class="mb-10">
+<h2 class="text-3xl font-extrabold text-on-surface tracking-tight mb-2">Welcome to SkillSwap</h2>
+<p class="text-on-surface-variant font-medium">Enter your credentials to access your studio.</p>
+</div>
+<form class="space-y-6">
+<!-- Email Input -->
+<div class="space-y-2">
+<label class="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant block ml-1">Email Address</label>
+<div class="relative input-container">
+<input class="w-full px-5 py-4 bg-surface-container-highest border-none rounded-xl text-on-surface placeholder:text-outline focus:ring-0 transition-all" placeholder="name@company.com" type="email"/>
+<div class="input-focus-line"></div>
+</div>
+</div>
+<!-- Password Input -->
+<div class="space-y-2">
+<div class="flex justify-between items-center px-1">
+<label class="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant">Password</label>
+<a class="font-label text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary-dim transition-colors" href="#">Forgot Password?</a>
+</div>
+<div class="relative input-container">
+<input class="w-full px-5 py-4 bg-surface-container-highest border-none rounded-xl text-on-surface placeholder:text-outline focus:ring-0 transition-all" placeholder="••••••••" type="password"/>
+<div class="input-focus-line"></div>
+</div>
+</div>
+<button class="w-full kinetic-gradient py-4 rounded-xl text-on-primary font-bold text-lg shadow-lg shadow-primary/20 active:scale-[0.98] transition-all duration-200" type="submit">
+                        Sign In
+                    </button>
+</form>
+<div class="relative my-10 flex items-center">
+<div class="flex-grow border-t border-surface-container-high"></div>
+<span class="px-4 font-label text-[10px] font-bold uppercase tracking-widest text-outline">Or continue with</span>
+<div class="flex-grow border-t border-surface-container-high"></div>
+</div>
+<!-- Social Logins -->
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-surface-container-low hover:bg-surface-container-high transition-all text-on-surface font-semibold text-sm">
+<svg class="w-5 h-5" viewbox="0 0 24 24">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+                        Google
+                    </button>
+<button class="flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-surface-container-low hover:bg-surface-container-high transition-all text-on-surface font-semibold text-sm">
+<svg class="w-5 h-5" fill="#0077b5" viewbox="0 0 24 24">
+<path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path>
+</svg>
+                        LinkedIn
+                    </button>
+</div>
+<div class="mt-12 text-center">
+<p class="text-on-surface-variant font-medium">New to SkillSwap? 
+                        <a class="text-primary font-bold ml-1 hover:underline underline-offset-4" href="#">Create an account</a>
+</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Component -->
+<footer class="w-full mt-auto bg-[#f4eeff] dark:bg-slate-900 border-none flex flex-col md:flex-row justify-between items-center px-8 py-12 w-full gap-4">
+<div class="text-[#5e5680] dark:text-slate-500 font-['Manrope'] text-xs font-semibold uppercase tracking-widest opacity-80 hover:opacity-100 transition-opacity">
+            © 2024 SkillSwap. The Kinetic Studio.
+        </div>
+<div class="flex flex-wrap justify-center gap-8">
+<a class="text-[#5e5680] dark:text-slate-500 font-['Manrope'] text-xs font-semibold uppercase tracking-widest hover:text-indigo-600 transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-[#5e5680] dark:text-slate-500 font-['Manrope'] text-xs font-semibold uppercase tracking-widest hover:text-indigo-600 transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-[#5e5680] dark:text-slate-500 font-['Manrope'] text-xs font-semibold uppercase tracking-widest hover:text-indigo-600 transition-colors opacity-80 hover:opacity-100" href="#">Help Center</a>
+<a class="text-[#5e5680] dark:text-slate-500 font-['Manrope'] text-xs font-semibold uppercase tracking-widest hover:text-indigo-600 transition-colors opacity-80 hover:opacity-100" href="#">Community Guidelines</a>
+</div>
+</footer>
+</body></html>

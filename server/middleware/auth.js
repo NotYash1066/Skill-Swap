@@ -22,6 +22,11 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ success: false, errors: ['Token is not valid'] });
     }
 
+    const tokenVersion = decoded.user.tokenVersion || 0;
+    if (tokenVersion !== (user.tokenVersion || 0)) {
+      return res.status(401).json({ success: false, errors: ['Token has been revoked'] });
+    }
+
     req.user = { id: user._id.toString(), ...user.toObject() };
     next();
   } catch (err) {

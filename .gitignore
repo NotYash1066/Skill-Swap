@@ -1,101 +1,56 @@
 # Dependencies
 node_modules/
-server/node_modules/
 client/node_modules/
+server/node_modules/
 
-# Production builds
-dist/
-build/
-
-# Environment variables
+# Environment & Secrets (CRITICAL - never commit these)
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*.local
+.env.production
+.env.staging
+server/.env
+server/.env.local
+*.pem
+*.key
+id_rsa*
+secrets/
+*.secret
 
 # Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-node_modules/
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
-.env
-.env.test
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless/
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# IDE files
-.vscode/
-.idea/
+# OS / Editor
+.DS_Store
+Thumbs.db
 *.swp
 *.swo
+*~
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# Build outputs
+client/dist/
+client/build/
+server/dist/
 
-#Ignore vscode AI rules
-.github\instructions\codacy.instructions.md
+# Uploads / local data (Skill-Swap specific)
+server/uploads/
+*.sqlite
+*.db
 
+# IDE
+.idea/
+.vscode/
+*.iml
 
-#Ignore cursor AI rules
-.cursor\rules\codacy.mdc
-stitch_assets/
+# Project-specific generated / internal
+.conductor/
+.stitch/
+conductor/
+docs/   # (optional - remove this line if you want docs in the repo)
+*.tsbuildinfo
+
+# Railway / deployment local overrides
+railway.env
+.railway/

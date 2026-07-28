@@ -10,6 +10,11 @@ class PeerService {
     this.isInitiator = false;
     
     // STUN/TURN servers for NAT traversal
+    // Priority:
+    //   1. VITE_ICE_SERVERS env var (JSON array) — set at build time
+    //   2. Fetched from /api/ice-servers (supports Twilio NTS rotation)
+    //   3. Default: Google STUN + OpenRelay TURN (free public TURN, rate-limited)
+    this._iceServersResolved = false;
     this.iceServers = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
@@ -26,12 +31,60 @@ class PeerService {
         }
       ]
     };
+    this._resolveIceServers();
     
     // Callbacks
     this.onStreamReceived = null;
     this.onPeerDisconnected = null;
     this.onConnectionStateChanged = null;
     this.onError = null;
+  }
+
+  // Resolve ICE servers dynamically from the backend API.
+  // Falls back to env var (VITE_ICE_SERVERS) if the API call fails.
+  async _resolveIceServers() {
+    if (this._iceServersResolved) return;
+
+    // Check env var first (build-time config takes priority)
+    try {
+      const raw = import.meta.env.VITE_ICE_SERVERS;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          logger.info('Using ICE servers from VITE_ICE_SERVERS env var');
+          this.iceServers = { iceServers: parsed };
+          this._iceServersResolved = true;
+          return;
+        }
+      }
+    } catch (e) {
+      logger.warn('Failed to parse VITE_ICE_SERVERS:', e);
+    }
+
+    // Fetch from backend API (supports Twilio NTS dynamic credentials)
+    try {
+      // Derive API base URL from the same source as the rest of the app
+      const baseUrl = import.meta.env.VITE_API_URL
+        || (import.meta.env.PROD ? '' : 'http://localhost:5000');
+      const token = localStorage.getItem('token');
+      const resp = await fetch(`${baseUrl}/api/ice-servers`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.iceServers && data.iceServers.length > 0) {
+          logger.info(`ICE servers loaded from API (source: ${data.source || 'unknown'})`);
+          this.iceServers = { iceServers: data.iceServers };
+          this._iceServersResolved = true;
+          return;
+        }
+      }
+    } catch (e) {
+      logger.warn('Failed to fetch ICE servers from API, using defaults:', e);
+    }
+
+    logger.info('Using default ICE servers (Google STUN + OpenRelay TURN)');
+    this._iceServersResolved = true;
   }
 
   // Initialize with socket connection

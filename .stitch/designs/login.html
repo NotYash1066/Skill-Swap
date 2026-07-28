@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SkillSwap - Sign In</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "error": "#b41340",
+                        "on-tertiary-fixed": "#3b002b",
+                        "tertiary-fixed": "#ff8ed2",
+                        "outline": "#79719d",
+                        "outline-variant": "#b0a7d6",
+                        "secondary-dim": "#005a50",
+                        "on-surface-variant": "#5e5680",
+                        "inverse-on-surface": "#a097c5",
+                        "inverse-primary": "#8083ff",
+                        "on-primary": "#f4f1ff",
+                        "on-background": "#302950",
+                        "surface-container-high": "#e6deff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#faf4ff",
+                        "on-surface": "#302950",
+                        "secondary-fixed-dim": "#5de7d3",
+                        "surface-container": "#ece4ff",
+                        "primary-fixed-dim": "#8387ff",
+                        "surface-container-highest": "#e1d8ff",
+                        "on-secondary": "#c0fff3",
+                        "on-secondary-container": "#005b51",
+                        "on-tertiary-fixed-variant": "#6e1354",
+                        "on-tertiary-container": "#63054a",
+                        "surface-dim": "#d8ceff",
+                        "primary": "#4647d3",
+                        "tertiary-fixed-dim": "#ef81c4",
+                        "on-primary-container": "#0a0081",
+                        "on-error-container": "#510017",
+                        "primary-container": "#9396ff",
+                        "primary-fixed": "#9396ff",
+                        "tertiary-container": "#ff8ed2",
+                        "error-container": "#f74b6d",
+                        "on-primary-fixed-variant": "#0e009d",
+                        "inverse-surface": "#0f072e",
+                        "secondary-container": "#6df5e1",
+                        "tertiary-dim": "#882a69",
+                        "primary-dim": "#3939c7",
+                        "secondary": "#00675d",
+                        "surface-variant": "#e1d8ff",
+                        "secondary-fixed": "#6df5e1",
+                        "surface-tint": "#4647d3",
+                        "on-secondary-fixed-variant": "#00655b",
+                        "on-error": "#ffefef",
+                        "surface": "#faf4ff",
+                        "background": "#faf4ff",
+                        "on-secondary-fixed": "#00463e",
+                        "on-primary-fixed": "#000000",
+                        "tertiary": "#963776",
+                        "surface-container-low": "#f4eeff",
+                        "error-dim": "#a70138",
+                        "on-tertiary": "#ffeef4"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .input-accent-border:focus-within::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #4647d3;
+            transform: translateX(-50%);
+            transition: width 0.3s ease;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-body text-on-background min-h-screen flex flex-col md:flex-row overflow-x-hidden">
+<!-- Suppressed Shell: BottomNavBar and TopAppBar are excluded for login journey per Rule -->
+<!-- Left Column: Visual/Marketing (Hidden on Mobile) -->
+<section class="hidden md:flex md:w-1/2 relative overflow-hidden bg-primary-container items-center justify-center p-12">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-30 mix-blend-overlay" data-alt="Modern collaborative workspace with diverse professionals exchanging ideas over digital tablets in a bright airy studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5wkrUP8Zafh_g-FIoQzlufiIbG_3b9c1cCUIyeJ7B4YSA_5H4MsmfrmQ2C2hmoswwCIvjHhMUbTg5hnIdNMTG5f6cKH4vTxfUhLKpNRFWcTvlAEtzTCFrNCC2uyxUSKrnMnurxDKQAkfqjT-SPR3NK41Hp1HsCJZs8Oyd0_Y9EaSuNhFTJreRa_d-a7KHrPqObFjoHV7pxVfJrOU1AeYTWs9BfO09JlQrcB-NbsMC1nb_BMo6F11mC_I0OycsCWDTmz330CFfUDY"/>
+</div>
+<!-- Organic Layering Element -->
+<div class="relative z-10 max-w-lg">
+<h1 class="font-headline text-5xl font-extrabold text-on-primary-container tracking-tighter leading-none mb-6">
+                Connect. Learn.<br/>Grow Together.
+            </h1>
+<p class="text-xl text-on-primary-container/80 leading-relaxed font-medium mb-10">
+                Join a community of thousands swapping expertise from coding to carpentry. Your next mentor is one click away.
+            </p>
+<!-- Connection Ribbon (Custom Component) -->
+<div class="flex items-center -space-x-4">
+<img class="w-14 h-14 rounded-full border-4 border-primary-container shadow-xl" data-alt="Close up portrait of a young professional woman smiling warmly" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc72jdXoIlBLzDXQvRFcqwSAstgfnjsLhtFpxygpz9xz53iPvYhvGT_RXu4Rze6FAsF8R7XI5lvwmfQP3wTSedVqRQ1jYePl0Mvq9V9DoMXKCqTRgz64Jst8dDHtgV0MerBMqM5SH3jymGyimydVj2p2cpByyQDb5WoxCWeb5aIM3Coojruc7tXaimw8raum6PnRcNS46y0qTcNOE0qOKeyNotIS3ri7ZP9k5i5T23Qa5PPodV6c401xBk9VRo7vgYs7OHMLPQpCA"/>
+<img class="w-14 h-14 rounded-full border-4 border-primary-container shadow-xl" data-alt="Portrait of a creative man with glasses looking into the camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGljxhpOaahIqAoCHSjrKYfslLHZPNGrxe1OcRdLtkpKk0KN3wOOiXQ1EM6cXstX9I06-A9hHf3imk9ksn7txjgb4xwR2pSytua9ciJmbAZq6m54TLkZ1ERgK6rKtk4S6DiJbkNlbuh2fnyl1-m-z-CRjOGKUF1XXA5ujAA1N3jWf6O0zHK0hmUBkjGh3YTyGY5gYKzIu4p24MSN0FTCjwj5LRfh9cCypurpR_1AOMn93F1htSvV2hjsSLrBGvBHMNY6v7hXShWS0"/>
+<img class="w-14 h-14 rounded-full border-4 border-primary-container shadow-xl" data-alt="Candid shot of a woman laughing during a collaboration session" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBR15olpibPHSzm0hPl-igCP9M7MiB7pOhnwXtJHuKSMW_Nwt4dG-TkZwvoIM7rXJ9boDmP5MSNXzw668IAdIAmf0sCHgaJEdVpZG1JPJ6NPbGBlX1Hy-EoZJtYDPMusQE12HaMZJ_Km5vP_1mRxmUS-VmKfyd_RQanesAG60HNxmIckDoBYPv7ebNChZMQ5M2AzQ5vzM5d-0P3cs870FUlXm5u_FuzyxJUUjroGJ7PlSBwggXh4JEkXNDZklsgF2rbPt3toW6Od8M"/>
+<div class="w-14 h-14 rounded-full border-4 border-primary-container shadow-xl bg-secondary text-on-secondary flex items-center justify-center font-bold text-sm">
+                    +2k
+                </div>
+</div>
+</div>
+<!-- Abstract Asymmetric Shape -->
+<div class="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary-container rounded-full opacity-20 blur-3xl"></div>
+</section>
+<!-- Right Column: Login Form (Primary on Mobile) -->
+<section class="flex-1 flex items-center justify-center px-6 py-12 md:px-20 bg-surface">
+<div class="w-full max-w-md">
+<!-- Logo/Welcome Header -->
+<div class="mb-12 text-center md:text-left">
+<div class="flex items-center justify-center md:justify-start gap-2 mb-8">
+<div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-container rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-on-primary" data-icon="sync_alt">sync_alt</span>
+</div>
+<span class="font-headline text-2xl font-extrabold text-primary tracking-tighter">SkillSwap</span>
+</div>
+<h2 class="font-headline text-3xl font-bold text-on-surface mb-2 tracking-tight">Welcome to SkillSwap</h2>
+<p class="text-on-surface-variant font-medium">Unlock shared knowledge and master new skills.</p>
+</div>
+<!-- Login Form -->
+<form class="space-y-6">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="block font-label text-sm font-bold uppercase tracking-widest text-on-surface-variant ml-1" for="email">Email Address</label>
+<div class="relative group input-accent-border">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors" data-icon="mail">mail</span>
+</div>
+<input class="block w-full pl-12 pr-4 py-4 bg-surface-container-highest border-0 rounded-xl font-body text-on-surface placeholder:text-outline focus:ring-0 transition-all" id="email" name="email" placeholder="name@example.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<div class="flex justify-between items-center ml-1">
+<label class="block font-label text-sm font-bold uppercase tracking-widest text-on-surface-variant" for="password">Password</label>
+<a class="text-sm font-semibold text-primary hover:text-primary-dim transition-colors" href="#">Forgot?</a>
+</div>
+<div class="relative group input-accent-border">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors" data-icon="lock">lock</span>
+</div>
+<input class="block w-full pl-12 pr-4 py-4 bg-surface-container-highest border-0 rounded-xl font-body text-on-surface placeholder:text-outline focus:ring-0 transition-all" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<!-- Sign In Button (Loading State Simulation via Opacity/Icon) -->
+<button class="group relative w-full flex justify-center py-4 px-6 rounded-xl font-headline font-bold text-on-primary bg-gradient-to-br from-primary to-primary-container shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 active:scale-[0.98] transition-all overflow-hidden" type="submit">
+<div class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="flex items-center gap-2">
+                        Sign In
+                        <!-- Loading State Visual -->
+<span class="material-symbols-outlined animate-spin text-sm" data-icon="progress_activity" style="font-size: 18px;">progress_activity</span>
+</span>
+</button>
+<!-- Social Login Options -->
+<div class="relative py-4">
+<div aria-hidden="true" class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-surface-container-high"></div>
+</div>
+<div class="relative flex justify-center text-sm font-label uppercase tracking-widest">
+<span class="bg-surface px-4 text-outline font-bold">Or continue with</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-surface-container-low text-on-surface font-semibold hover:bg-surface-container-high transition-colors" type="button">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5XwbHIZL10AO79qXhCHqA3H2_J6WBFzgEF4lKfI73BWZ2fZhq4sT7EqAwoR_ebOGNbxVk8k53iDKo9ZKcCJxmKDjX9j47a22II5YTmrc_hkInrf-Cmmq2bL1lUWSDplCwz9OL3UAD0e2fD6CcM4uObWJVrCmNxQ1BP5lpsGmeEaym40_r64eTc-SWHgmu27r8MTbdXj64qUKtsqc92Ce5dNlsvJI6L-Yi1MRryikV4HWh8ZDF13uZm-Be-DJtZw6jNkfWYICEXHA"/>
+<span class="font-label text-xs font-bold uppercase tracking-tighter">Google</span>
+</button>
+<button class="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-surface-container-low text-on-surface font-semibold hover:bg-surface-container-high transition-colors" type="button">
+<img alt="LinkedIn" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB33tA-_bmZ8XAjNzF9YBlSSqp3draEpLltA78es9FSguT25185-SLxw14a8RaJkhn5UvWhLYa-dolcEop1TYKjUYPqq2xSMwL1H7nPNib2SgS3HeSkiiNbyDt1GCtxJ9J9mm2UJ-BAlFsF6Rt7moCDaYNQCy0z8auUl_d4aHDlvgJ0I6UikSuGjzp-1ZZcQGqEgcrUO4FJjJuV9bf-tBHojLXTjSuLUU2t5XaJ86z_0zbnjBXpOJtNhPgXRbhCsypzmVL2NdPqRf8"/>
+<span class="font-label text-xs font-bold uppercase tracking-tighter">LinkedIn</span>
+</button>
+</div>
+</form>
+<!-- Sign Up Link -->
+<p class="mt-12 text-center text-on-surface-variant font-medium">
+                Don't have an account? 
+                <a class="text-primary font-bold hover:underline decoration-2 underline-offset-4 transition-all" href="#">Sign up here</a>
+</p>
+</div>
+</section>
+<!-- Visual Background Accents for Mobile -->
+<div class="md:hidden fixed top-0 right-0 -z-10 w-48 h-48 bg-primary-container/20 rounded-full blur-3xl"></div>
+<div class="md:hidden fixed bottom-0 left-0 -z-10 w-64 h-64 bg-secondary-container/10 rounded-full blur-3xl"></div>
+</body></html>

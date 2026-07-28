@@ -63,9 +63,12 @@ npm install
 Create `server/.env`:
 ```env
 MONGO_URI=mongodb://localhost:27017/SkillSwapDB
-JWT_SECRET=your_jwt_secret_key
+JWT_SECRET=your_jwt_secret_key_minimum_32_characters
+REFRESH_TOKEN_SECRET=your_distinct_refresh_secret_minimum_32_characters
 PORT=5000
 ```
+
+> **Important:** `REFRESH_TOKEN_SECRET` must be different from `JWT_SECRET`. The server will refuse to start if they are the same.
 
 5. **Start MongoDB**
 ```bash

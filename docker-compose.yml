@@ -23,36 +23,25 @@ services:
     networks:
       - skillswap-network
 
-  server:
+  app:
     build:
-      context: ./server
+      context: .
       dockerfile: Dockerfile
-    container_name: skillswap-server
+    container_name: skillswap-app
     restart: unless-stopped
     env_file:
       - ./server/.env
     environment:
       MONGO_URI: mongodb://mongodb:27017/SkillSwapDB
+      REDIS_URL: redis://redis:6379
       REDIS_HOST: redis
       REDIS_PORT: 6379
-    ports:
-      - "5000:5000"
-    depends_on:
-      - mongodb
-      - redis
-    networks:
-      - skillswap-network
-
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    container_name: skillswap-client
-    restart: unless-stopped
+      NODE_ENV: production
     ports:
       - "80:80"
     depends_on:
-      - server
+      - mongodb
+      - redis
     networks:
       - skillswap-network
 

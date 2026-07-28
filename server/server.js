@@ -78,8 +78,13 @@ app.get("/", (req, res) => {
 });
 
 const connectDB = require('./config/db');
+const { connectRedis } = require('./config/redis');
+
 // Connect to Database
 connectDB();
+
+// Connect to Redis (non-blocking, app works without it for cache etc.)
+connectRedis().catch(err => logger.error('Failed to connect to Redis (non-fatal):', err.message));
 
 // Import routes
 const authRoutes = require("./routes/auth");
@@ -92,6 +97,7 @@ const sessionsRoutes = require("./routes/sessions");
 const badgesRoutes = require("./routes/badges");
 const progressRoutes = require("./routes/progress");
 const matchesEnhancedRoutes = require("./routes/matchesEnhanced");
+const iceServersRoutes = require("./routes/iceServers");
 
 // Import video handler
 const videoHandler = require("./socketHandlers/videoHandler");
@@ -114,6 +120,7 @@ app.use("/api/sessions", sessionsRoutes);
 app.use("/api/badges", badgesRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/matches", matchesEnhancedRoutes);
+app.use("/api/ice-servers", iceServersRoutes);
 
 // Debug route to verify server is working
 app.get("/api/test", (req, res) => {

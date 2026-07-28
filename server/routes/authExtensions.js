@@ -36,6 +36,7 @@ router.put("/reset-password/:resettoken", authLimiter, [
 		user.resetPasswordToken = undefined;
 		user.resetPasswordExpire = undefined;
 		user.refreshToken = null;
+		user.tokenVersion = (user.tokenVersion || 0) + 1;
 		await user.save();
 
 		res.json({ success: true, message: 'Password reset successful' });

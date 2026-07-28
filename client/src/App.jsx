@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
 import ProfileSettings from "./pages/ProfileSettings";
+import { API_ENDPOINTS } from "./config/api";
 import { AUTH_STATE_CHANGE_EVENT, clearAuthState, notifyAuthStateChange, storeAuthTokens } from "./utils/auth";
 import "./styles/App.css";
 import "./styles/themes.css";
@@ -23,15 +24,18 @@ function App() {
 
   const verifyToken = useCallback(async (token) => {
     try {
-      const response = await axios.get("/api/auth/verify-token", {
+      const response = await axios.get(API_ENDPOINTS.AUTH.VERIFY_TOKEN, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000,
       });
-      return { valid: response.data.success, definitiveFailure: !response.data.success };
+      // Token is valid — definitive success
+      return { valid: true, definitiveFailure: true };
     } catch (error) {
       if (error.response && error.response.status === 401) {
+        // Token is invalid — definitive failure
         return { valid: false, definitiveFailure: true };
       }
+      // Network/server error — not definitive, safe to retry
       console.error("Token verification failed:", error.message);
       return { valid: false, definitiveFailure: false };
     }
@@ -40,21 +44,22 @@ function App() {
   const refreshAccessToken = useCallback(async (refreshToken) => {
     try {
       const response = await axios.post(
-        "/api/auth/refresh-token",
+        API_ENDPOINTS.AUTH.REFRESH_TOKEN,
         { refreshToken },
         { timeout: 5000 }
       );
 
-      return { token: response.data.token, definitiveFailure: true };
+      return {
+        token: response.data.token,
+        refreshToken: response.data.refreshToken,
+        definitiveFailure: false
+      };
     } catch (error) {
       if (error.response?.status === 401) {
         return { token: null, definitiveFailure: true };
       }
 
-      if (error.response?.status !== 401) {
-        console.error("Token refresh failed:", error.message);
-      }
-
+      console.error("Token refresh failed:", error.message);
       return { token: null, definitiveFailure: false };
     }
   }, []);
@@ -86,7 +91,8 @@ function App() {
 
 		  if (refreshResult.token) {
 			const newToken = refreshResult.token;
-			storeAuthTokens({ token: newToken, refreshToken });
+			const newRefreshToken = refreshResult.refreshToken || refreshToken;
+			storeAuthTokens({ token: newToken, refreshToken: newRefreshToken });
 			const refreshedVerificationResult = await verifyToken(newToken);
 			isValid = refreshedVerificationResult.valid;
 
@@ -139,21 +145,14 @@ function App() {
     };
   }, [syncAuthState]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <VideoCallProvider>
-          <Router future={{ 
-            v7_startTransition: true, 
-            v7_relativeSplatPath: true 
-          }}>
-          <div className="App">
-            <GlobalVideoCall />
-            <Routes>
+  const routes = (
+    <Router future={{
+      v7_startTransition: true,
+      v7_relativeSplatPath: true
+    }}>
+      <div className="App">
+        {isAuthenticated && <GlobalVideoCall />}
+        <Routes>
               <Route 
                 path="/login" 
                 element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} 
@@ -164,11 +163,11 @@ function App() {
               />
               <Route
                 path="/forgot-password"
-                element={<ForgotPassword />}
+                element={!isAuthenticated ? <ForgotPassword /> : <Navigate to="/dashboard" />}
               />
               <Route
                 path="/reset-password/:token"
-                element={<ResetPassword />}
+                element={!isAuthenticated ? <ResetPassword /> : <Navigate to="/dashboard" />}
               />
               <Route 
                 path="/dashboard" 
@@ -190,10 +189,23 @@ function App() {
                 path="/" 
                 element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} 
               />
-            </Routes>
+        </Routes>
+      </div>
+    </Router>
+  );
+
+  return (
+    <ErrorBoundary>
+      <ThemeProvider>
+        {loading ? (
+          <div className="min-h-screen bg-surface flex items-center justify-center text-on-surface font-body">
+            Loading...
           </div>
-          </Router>
-        </VideoCallProvider>
+        ) : isAuthenticated ? (
+          <VideoCallProvider>{routes}</VideoCallProvider>
+        ) : (
+          routes
+        )}
       </ThemeProvider>
     </ErrorBoundary>
   );
